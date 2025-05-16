@@ -354,7 +354,7 @@ var GameScene = (function (_super) {
         // 用Shape绘制背景色
         var bg = new egret.Shape();
         bg.graphics.beginFill(0x222222, 0.95);
-        bg.graphics.drawRect(0, 0, 500, 300);
+        bg.graphics.drawRoundRect(0, 0, 500, 300, 20, 20);
         bg.graphics.endFill();
         panel.addChild(bg);
         // 英文单词
@@ -636,7 +636,7 @@ var GameScene = (function (_super) {
         // 用Shape绘制背景色
         var bg = new egret.Shape();
         bg.graphics.beginFill(0x222222, 0.95);
-        bg.graphics.drawRect(0, 0, 400, 200);
+        bg.graphics.drawRoundRect(0, 0, 400, 200, 20, 20);
         bg.graphics.endFill();
         panel.addChild(bg);
         var label = new eui.Label();
