@@ -305,8 +305,7 @@ private update(x, y) {
 	private loadWordList() {
 		let self = this;
 		let xhr = new XMLHttpRequest();
-		xhr.open('GET', 'http://yourwind.site:15001/py/get_bookunit_word?refresh=0&bookId=48&unitId=235', true);
-		xhr.setRequestHeader('Referer', 'https://www.yourwind.fun');
+		xhr.open('GET', 'https://res.yourwind.fun/py/get_bookunit_word?refresh=0&bookId=48&unitId=236', true);
 		xhr.onreadystatechange = function () {
 			if (xhr.readyState == 4) {
 				if (xhr.status == 200) {
