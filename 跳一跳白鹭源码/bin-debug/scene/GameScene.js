@@ -446,6 +446,11 @@ var GameScene = (function (_super) {
             this.scoreLabel.text = this.score.toString();
             // 显示分数减少的提示（可选）
             this.showScoreReduceTip();
+            // 如果分数已经为0，立即显示重新开始弹窗
+            if (this.score === 0) {
+                this.showRestartPanel();
+                return; // 防止继续显示下一题
+            }
             // 继续下一题
             this.currentWordIndex++;
             if (this.currentWordIndex >= this.wordList.length) {
@@ -587,9 +592,15 @@ var GameScene = (function (_super) {
             this.showRestartPanel();
         }
     };
-    // 5. 回到初始位置弹窗
+    // 5. 修改重新开始弹窗
     GameScene.prototype.showRestartPanel = function () {
         var _this = this;
+        // 创建遮罩层，避免点击其他区域
+        var maskShape = new egret.Shape();
+        maskShape.graphics.beginFill(0x000000, 0.5);
+        maskShape.graphics.drawRect(0, 0, this.width, this.height);
+        maskShape.graphics.endFill();
+        this.addChild(maskShape);
         var panel = new eui.Group();
         panel.width = 400;
         panel.height = 200;
@@ -615,15 +626,46 @@ var GameScene = (function (_super) {
         btn.horizontalCenter = 0;
         btn.bottom = 40;
         btn.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
+            // 移除弹窗和遮罩
             if (panel.parent)
                 panel.parent.removeChild(panel);
-            _this.score = 0;
-            _this.scoreLabel.text = _this.score.toString();
-            _this.currentWordIndex = 0;
-            _this.showQuizPanel();
+            if (maskShape.parent)
+                maskShape.parent.removeChild(maskShape);
+            // 完全重置游戏到初始状态
+            _this.completeGameReset();
         }, this);
         panel.addChild(btn);
         this.addChild(panel);
+    };
+    // 新增方法：完全重置游戏到初始状态
+    GameScene.prototype.completeGameReset = function () {
+        // 重置分数
+        this.score = 0;
+        this.scoreLabel.text = this.score.toString();
+        // 重置词库索引
+        this.currentWordIndex = 0;
+        // 清除所有方块和相关对象
+        this.blockPanel.removeChildren();
+        this.blockArr = [];
+        this.reBackBlockArr = [];
+        // 重置玩家位置状态
+        this.player.rotation = 0;
+        this.player.scaleY = 1;
+        this.isReadyJump = false;
+        this.jumpDistance = 0;
+        // 重置方向
+        this.direction = 1;
+        // 停止所有计时器和动画
+        egret.Tween.removeAllTweens();
+        if (this.quizTimer) {
+            this.quizTimer.stop();
+            this.quizTimer.removeEventListener(egret.TimerEvent.TIMER, this.onQuizTimer, this);
+            this.quizTimer.removeEventListener(egret.TimerEvent.TIMER_COMPLETE, this.onQuizTimeout, this);
+        }
+        // 重置场景（调用原有的reset方法）
+        this.reset();
+        // 重新显示题目
+        this.showQuizPanel();
     };
     return GameScene;
 }(eui.Component));
