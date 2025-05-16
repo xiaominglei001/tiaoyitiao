@@ -1,0 +1,270 @@
+{
+    "data": [
+        [
+            {
+                "en": "rain",
+                "id": 1,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_3_20250107181820A100.mp3",
+                "zh": "雨"
+            },
+            {
+                "en": "shine",
+                "id": 2,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_5_20250107181820A101.mp3",
+                "zh": "光亮"
+            },
+            {
+                "en": "rainy",
+                "id": 3,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_7_20250107181820A102.mp3",
+                "zh": "多雨的"
+            },
+            {
+                "en": "run",
+                "id": 4,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_9_20250107181820A103.mp3",
+                "zh": "跑"
+            },
+            {
+                "en": "windy",
+                "id": 5,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_11_20250107181820A104.mp3",
+                "zh": "多风的"
+            },
+            {
+                "en": "fly",
+                "id": 6,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_13_20250107181820A105.mp3",
+                "zh": "放飞"
+            },
+            {
+                "en": "kite",
+                "id": 7,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_15_20250107181820A106.mp3",
+                "zh": "风筝"
+            },
+            {
+                "en": "park",
+                "id": 8,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_17_20250107181820A107.mp3",
+                "zh": "公园"
+            },
+            {
+                "en": "hot",
+                "id": 9,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_19_20250107181820A108.mp3",
+                "zh": "炎热的"
+            },
+            {
+                "en": "sunny",
+                "id": 10,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_21_20250107181820A109.mp3",
+                "zh": "阳光充足的"
+            },
+            {
+                "en": "swim",
+                "id": 11,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_23_20250107181820A110.mp3",
+                "zh": "游泳"
+            },
+            {
+                "en": "water",
+                "id": 12,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_25_20250107181820A111.mp3",
+                "zh": "水"
+            },
+            {
+                "en": "cold",
+                "id": 13,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_27_20250107181820A112.mp3",
+                "zh": "寒冷的"
+            },
+            {
+                "en": "snowy",
+                "id": 14,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_29_20250107181820A113.mp3",
+                "zh": "多雪的"
+            },
+            {
+                "en": "throw",
+                "id": 15,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_31_20250107181820A114.mp3",
+                "zh": "投，扔"
+            },
+            {
+                "en": "snowball",
+                "id": 16,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_33_20250107181820A115.mp3",
+                "zh": "雪球"
+            },
+            {
+                "en": "raincoat",
+                "id": 17,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_35_20250107181820A116.mp3",
+                "zh": "雨衣"
+            },
+            {
+                "en": "umbrella",
+                "id": 18,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_37_20250107181820A117.mp3",
+                "zh": "雨伞"
+            },
+            {
+                "en": "warm",
+                "id": 19,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_39_20250107181820A118.mp3",
+                "zh": "保暖的"
+            },
+            {
+                "en": "music",
+                "id": 20,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_41_20250107181820A119.mp3",
+                "zh": "音乐"
+            },
+            {
+                "en": "weather",
+                "id": 21,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_43_20250107181820A120.mp3",
+                "zh": "天气"
+            },
+            {
+                "en": "bookshop",
+                "id": 22,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_45_20250107181820A121.mp3",
+                "zh": "书店"
+            },
+            {
+                "en": "wait",
+                "id": 23,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_47_20250107181820A122.mp3",
+                "zh": "等"
+            },
+            {
+                "en": "wet",
+                "id": 24,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_49_20250107181820A123.mp3",
+                "zh": "湿的"
+            },
+            {
+                "en": "again",
+                "id": 25,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_51_20250107181820A124.mp3",
+                "zh": "又"
+            },
+            {
+                "en": "dry",
+                "id": 26,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_53_20250107181820A125.mp3",
+                "zh": "干燥的"
+            },
+            {
+                "en": "sell",
+                "id": 27,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_55_20250107181820A126.mp3",
+                "zh": "卖"
+            },
+            {
+                "en": "these",
+                "id": 28,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_57_20250107181820A127.mp3",
+                "zh": "this的复数形式"
+            },
+            {
+                "en": "idea",
+                "id": 29,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_59_20250107181820A128.mp3",
+                "zh": "主意"
+            },
+            {
+                "en": "club",
+                "id": 30,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_61_20250107181820A129.mp3",
+                "zh": "俱乐部"
+            },
+            {
+                "en": "stay",
+                "id": 31,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_63_20250107181820A130.mp3",
+                "zh": "停留"
+            },
+            {
+                "en": "stay away from",
+                "id": 32,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_65_20250107181820A131.mp3",
+                "zh": "远离"
+            },
+            {
+                "en": "stand",
+                "id": 33,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_67_20250107181820A132.mp3",
+                "zh": "站立"
+            },
+            {
+                "en": "tree",
+                "id": 34,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_69_20250107181820A133.mp3",
+                "zh": "树"
+            },
+            {
+                "en": "walk",
+                "id": 35,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_71_20250107181820A134.mp3",
+                "zh": "走"
+            },
+            {
+                "en": "carefully",
+                "id": 36,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_73_20250107181820A135.mp3",
+                "zh": "小心地"
+            },
+            {
+                "en": "spring",
+                "id": 37,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_75_20250107181820A136.mp3",
+                "zh": "春天"
+            },
+            {
+                "en": "summer",
+                "id": 38,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_77_20250107181820A137.mp3",
+                "zh": "夏天"
+            },
+            {
+                "en": "autumn",
+                "id": 39,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_79_20250107181820A138.mp3",
+                "zh": "秋天"
+            },
+            {
+                "en": "winter",
+                "id": 40,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_81_20250107181820A139.mp3",
+                "zh": "冬天"
+            },
+            {
+                "en": "season",
+                "id": 41,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_83_20250107181820A140.mp3",
+                "zh": "季节"
+            },
+            {
+                "en": "step",
+                "id": 42,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_85_20250107181820A141.mp3",
+                "zh": "步骤"
+            },
+            {
+                "en": "drawing",
+                "id": 43,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_87_20250107181820A142.mp3",
+                "zh": "图画"
+            },
+            {
+                "en": "cloudy",
+                "id": 44,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_89_20250107181820A143.mp3",
+                "zh": "多云的"
+            }
+        ]
+    ]
+}
