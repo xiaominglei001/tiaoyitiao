@@ -67,6 +67,8 @@ class GameScene extends eui.Component implements eui.UIComponent {
 	// 1. 新增变量：答题顺序和答题结果
 	private quizOrder: number[] = [];
 	private quizResult: boolean[] = [];
+	// 新增变量：跟踪是否有过错误回答
+	private hadWrongAnswer: boolean = false;
 
 	public constructor() {
 		super();
@@ -316,6 +318,7 @@ private update(x, y) {
 							self.quizOrder = self.shuffleOrder(self.wordList.length);
 							self.quizResult = [];
 							self.currentWordIndex = 0;
+							self.hadWrongAnswer = false; // 重置错误回答标志
 							self.showQuizPanel();
 							return;
 						}
@@ -334,6 +337,7 @@ private update(x, y) {
 									self.quizOrder = self.shuffleOrder(self.wordList.length);
 									self.quizResult = [];
 									self.currentWordIndex = 0;
+									self.hadWrongAnswer = false; // 重置错误回答标志
 									self.showQuizPanel();
 									return;
 								}
@@ -362,7 +366,8 @@ private update(x, y) {
 		if (this.quizOrder.length === 0) {
 			// 全部答完，统计分数
 			const correctCount = this.quizResult.filter(x => x).length;
-			const isPerfect = correctCount === this.wordList.length;
+			// 判断是否全部回答正确：所有答案正确且没有出现过错误回答
+			const isPerfect = correctCount === this.wordList.length && !this.hadWrongAnswer;
 			this.showFinalPanel(isPerfect, correctCount, this.wordList.length);
 			return;
 		}
@@ -499,6 +504,9 @@ private update(x, y) {
 		if (this.score > 0) {
 			this.score--;
 			this.scoreLabel.text = this.score.toString();
+			
+			// 记录出现了错误回答
+			this.hadWrongAnswer = true;
 			
 			// 显示分数减少的提示（可选）
 			this.showScoreReduceTip();
@@ -737,6 +745,9 @@ private update(x, y) {
 		this.blockArr = [];
 		this.reBackBlockArr = [];
 		
+		// 重置错误回答标志
+		this.hadWrongAnswer = false;
+		
 		// 重置场景（调用原有的reset方法）
 		this.reset();
 		
@@ -816,7 +827,9 @@ private update(x, y) {
 		label.horizontalCenter = 0;
 		label.top = 40;
 		if (isPerfect) {
-			label.text = `全部回答正确！\n分数：${correctCount}/${total}`;
+			label.text = `太棒了！一次全部回答正确！\n分数：${correctCount}/${total}`;
+		} else if (correctCount === total) {
+			label.text = `全部答对了！但有重复作答。\n分数：${correctCount}/${total}`;
 		} else {
 			label.text = `答题结束！\n分数：${correctCount}/${total}`;
 		}
@@ -841,6 +854,7 @@ private update(x, y) {
 			this.quizOrder = this.shuffleOrder(this.wordList.length);
 			this.quizResult = [];
 			this.currentWordIndex = 0;
+			this.hadWrongAnswer = false; // 重置错误回答标志
 			
 			// 完全重置游戏到初始状态
 			this.completeGameReset();

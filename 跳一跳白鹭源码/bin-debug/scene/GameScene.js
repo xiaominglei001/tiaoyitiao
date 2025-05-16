@@ -46,6 +46,8 @@ var GameScene = (function (_super) {
         // 1. 新增变量：答题顺序和答题结果
         _this.quizOrder = [];
         _this.quizResult = [];
+        // 新增变量：跟踪是否有过错误回答
+        _this.hadWrongAnswer = false;
         return _this;
     }
     GameScene.prototype.partAdded = function (partName, instance) {
@@ -293,6 +295,7 @@ var GameScene = (function (_super) {
                             self.quizOrder = self.shuffleOrder(self.wordList.length);
                             self.quizResult = [];
                             self.currentWordIndex = 0;
+                            self.hadWrongAnswer = false; // 重置错误回答标志
                             self.showQuizPanel();
                             return;
                         }
@@ -312,6 +315,7 @@ var GameScene = (function (_super) {
                                     self.quizOrder = self.shuffleOrder(self.wordList.length);
                                     self.quizResult = [];
                                     self.currentWordIndex = 0;
+                                    self.hadWrongAnswer = false; // 重置错误回答标志
                                     self.showQuizPanel();
                                     return;
                                 }
@@ -343,7 +347,8 @@ var GameScene = (function (_super) {
         if (this.quizOrder.length === 0) {
             // 全部答完，统计分数
             var correctCount = this.quizResult.filter(function (x) { return x; }).length;
-            var isPerfect = correctCount === this.wordList.length;
+            // 判断是否全部回答正确：所有答案正确且没有出现过错误回答
+            var isPerfect = correctCount === this.wordList.length && !this.hadWrongAnswer;
             this.showFinalPanel(isPerfect, correctCount, this.wordList.length);
             return;
         }
@@ -479,6 +484,8 @@ var GameScene = (function (_super) {
         if (this.score > 0) {
             this.score--;
             this.scoreLabel.text = this.score.toString();
+            // 记录出现了错误回答
+            this.hadWrongAnswer = true;
             // 显示分数减少的提示（可选）
             this.showScoreReduceTip();
             // 如果分数已经为0，立即显示重新开始弹窗
@@ -691,6 +698,8 @@ var GameScene = (function (_super) {
         this.blockPanel.removeChildren();
         this.blockArr = [];
         this.reBackBlockArr = [];
+        // 重置错误回答标志
+        this.hadWrongAnswer = false;
         // 重置场景（调用原有的reset方法）
         this.reset();
         // 确保场景可交互
@@ -761,7 +770,10 @@ var GameScene = (function (_super) {
         label.horizontalCenter = 0;
         label.top = 40;
         if (isPerfect) {
-            label.text = "\u5168\u90E8\u56DE\u7B54\u6B63\u786E\uFF01\n\u5206\u6570\uFF1A" + correctCount + "/" + total;
+            label.text = "\u592A\u68D2\u4E86\uFF01\u4E00\u6B21\u5168\u90E8\u56DE\u7B54\u6B63\u786E\uFF01\n\u5206\u6570\uFF1A" + correctCount + "/" + total;
+        }
+        else if (correctCount === total) {
+            label.text = "\u5168\u90E8\u7B54\u5BF9\u4E86\uFF01\u4F46\u6709\u91CD\u590D\u4F5C\u7B54\u3002\n\u5206\u6570\uFF1A" + correctCount + "/" + total;
         }
         else {
             label.text = "\u7B54\u9898\u7ED3\u675F\uFF01\n\u5206\u6570\uFF1A" + correctCount + "/" + total;
@@ -786,6 +798,7 @@ var GameScene = (function (_super) {
             _this.quizOrder = _this.shuffleOrder(_this.wordList.length);
             _this.quizResult = [];
             _this.currentWordIndex = 0;
+            _this.hadWrongAnswer = false; // 重置错误回答标志
             // 完全重置游戏到初始状态
             _this.completeGameReset();
         }, this);
