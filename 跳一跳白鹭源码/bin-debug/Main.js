@@ -78,6 +78,10 @@ var Main = (function (_super) {
     }
     Main.prototype.createChildren = function () {
         _super.prototype.createChildren.call(this);
+        // 设置舞台缩放模式为全屏自适应
+        this.stage.scaleMode = egret.StageScaleMode.EXACT_FIT;
+        this.stage.orientation = egret.OrientationMode.AUTO;
+        this.stage.maxTouches = 1;
         egret.lifecycle.addLifecycleListener(function (context) {
             // custom lifecycle plugin
         });

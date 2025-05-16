@@ -33,6 +33,11 @@ class Main extends eui.UILayer {
     protected createChildren(): void {
         super.createChildren();
 
+        // 设置舞台缩放模式为全屏自适应
+        this.stage.scaleMode = egret.StageScaleMode.EXACT_FIT;
+        this.stage.orientation = egret.OrientationMode.AUTO;
+        this.stage.maxTouches = 1;
+
         egret.lifecycle.addLifecycleListener((context) => {
             // custom lifecycle plugin
         })
