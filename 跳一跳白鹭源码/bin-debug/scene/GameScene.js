@@ -748,19 +748,20 @@ var GameScene = (function (_super) {
     // 新增 showFinalPanel 方法
     GameScene.prototype.showFinalPanel = function (isPerfect, correctCount, total) {
         var _this = this;
-        // 遮罩
-        var maskShape = new egret.Shape();
-        maskShape.graphics.beginFill(0x000000, 0.5);
-        maskShape.graphics.drawRect(0, 0, this.width, this.height);
-        maskShape.graphics.endFill();
-        this.addChild(maskShape);
+        // 创建结果面板
         var panel = new eui.Group();
         panel.width = 500;
         panel.height = 300;
         panel.horizontalCenter = 0;
         panel.verticalCenter = 0;
+        // 满分动画先放，确保在最底层
+        if (isPerfect) {
+            // 直接调用全屏放礼花，添加到舞台而非面板中
+            this.showFireworks(this);
+        }
+        // 用Shape绘制背景色，但不使用全屏遮罩
         var bg = new egret.Shape();
-        bg.graphics.beginFill(0x222222, 0.95);
+        bg.graphics.beginFill(0x222222, 0.9); // 调低透明度让礼花更明显
         bg.graphics.drawRoundRect(0, 0, 500, 300, 20, 20);
         bg.graphics.endFill();
         panel.addChild(bg);
@@ -781,10 +782,6 @@ var GameScene = (function (_super) {
             label.text = "\u7B54\u9898\u7ED3\u675F\uFF01\n\u5206\u6570\uFF1A" + this.score + "/" + total;
         }
         panel.addChild(label);
-        // 满分动画
-        if (isPerfect) {
-            this.showFireworks(panel);
-        }
         var btn = new eui.Button();
         btn.label = '重新开始';
         btn.width = 160;
@@ -794,8 +791,6 @@ var GameScene = (function (_super) {
         btn.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
             if (panel.parent)
                 panel.parent.removeChild(panel);
-            if (maskShape.parent)
-                maskShape.parent.removeChild(maskShape);
             // 重新洗牌词库顺序
             _this.quizOrder = _this.shuffleOrder(_this.wordList.length);
             _this.quizResult = [];
@@ -809,25 +804,85 @@ var GameScene = (function (_super) {
     };
     // 简单彩色礼花动画
     GameScene.prototype.showFireworks = function (parent) {
-        var _loop_1 = function (i) {
+        var _this = this;
+        // 创建更多、更大的礼花粒子
+        var particleCount = 100; // 增加粒子数量
+        var screenWidth = this.stage.stageWidth;
+        var screenHeight = this.stage.stageHeight;
+        // 创建多组礼花，不同位置爆发
+        var burstCount = 5;
+        for (var b = 0; b < burstCount; b++) {
+            // 随机爆发点
+            var burstX = Math.random() * screenWidth * 0.8 + screenWidth * 0.1;
+            var burstY = Math.random() * screenHeight * 0.6 + screenHeight * 0.2;
+            var _loop_1 = function (i) {
+                var color = Math.floor(Math.random() * 0xffffff);
+                var circle = new egret.Shape();
+                circle.graphics.beginFill(color);
+                circle.graphics.drawCircle(0, 0, 3 + Math.random() * 8);
+                circle.graphics.endFill();
+                circle.x = burstX;
+                circle.y = burstY;
+                parent.addChild(circle);
+                // 随机角度和距离
+                var angle = Math.random() * Math.PI * 2;
+                var distance = 50 + Math.random() * 300;
+                var tx = circle.x + Math.cos(angle) * distance;
+                var ty = circle.y + Math.sin(angle) * distance;
+                // 添加闪烁效果和随机速度
+                var duration = 800 + Math.random() * 1200;
+                egret.Tween.get(circle)
+                    .to({ x: tx, y: ty, alpha: 0.8 }, duration * 0.5)
+                    .to({ alpha: 0 }, duration * 0.5)
+                    .call(function () {
+                    if (circle.parent)
+                        circle.parent.removeChild(circle);
+                });
+            };
+            // 每组礼花的粒子
+            for (var i = 0; i < particleCount / burstCount; i++) {
+                _loop_1(i);
+            }
+        }
+        // 添加3秒后再次爆发的效果，增强持续感
+        setTimeout(function () {
+            if (parent.stage) {
+                _this.showDelayedFireworks(parent);
+            }
+        }, 800);
+    };
+    // 延迟爆发的第二波礼花
+    GameScene.prototype.showDelayedFireworks = function (parent) {
+        var particleCount = 80;
+        var screenWidth = this.stage.stageWidth;
+        var screenHeight = this.stage.stageHeight;
+        // 随机爆发点
+        var burstX = Math.random() * screenWidth * 0.8 + screenWidth * 0.1;
+        var burstY = Math.random() * screenHeight * 0.6 + screenHeight * 0.2;
+        var _loop_2 = function (i) {
             var color = Math.floor(Math.random() * 0xffffff);
             var circle = new egret.Shape();
             circle.graphics.beginFill(color);
-            circle.graphics.drawCircle(0, 0, 12 + Math.random() * 8);
+            circle.graphics.drawCircle(0, 0, 2 + Math.random() * 6);
             circle.graphics.endFill();
-            circle.x = 250;
-            circle.y = 180;
+            circle.x = burstX;
+            circle.y = burstY;
             parent.addChild(circle);
-            var angle = (i / 12) * Math.PI * 2;
-            var tx = circle.x + Math.cos(angle) * 120;
-            var ty = circle.y + Math.sin(angle) * 80;
+            var angle = Math.random() * Math.PI * 2;
+            var distance = 50 + Math.random() * 250;
+            var tx = circle.x + Math.cos(angle) * distance;
+            var ty = circle.y + Math.sin(angle) * distance;
+            var duration = 700 + Math.random() * 1000;
             egret.Tween.get(circle)
-                .to({ x: tx, y: ty, alpha: 0 }, 1200 + Math.random() * 400)
-                .call(function () { if (circle.parent)
-                circle.parent.removeChild(circle); });
+                .to({ x: tx, y: ty, alpha: 0.7 }, duration * 0.6)
+                .to({ alpha: 0 }, duration * 0.4)
+                .call(function () {
+                if (circle.parent)
+                    circle.parent.removeChild(circle);
+            });
         };
-        for (var i = 0; i < 12; i++) {
-            _loop_1(i);
+        for (var i = 0; i < particleCount; i++) {
+            _loop_2(i);
         }
     };
     return GameScene;

@@ -803,20 +803,22 @@ private update(x, y) {
 	}
 	// 新增 showFinalPanel 方法
 	private showFinalPanel(isPerfect: boolean, correctCount: number, total: number) {
-		// 遮罩
-		let maskShape = new egret.Shape();
-		maskShape.graphics.beginFill(0x000000, 0.5);
-		maskShape.graphics.drawRect(0, 0, this.width, this.height);
-		maskShape.graphics.endFill();
-		this.addChild(maskShape);
-
+		// 创建结果面板
 		let panel = new eui.Group();
 		panel.width = 500;
 		panel.height = 300;
 		panel.horizontalCenter = 0;
 		panel.verticalCenter = 0;
+		
+		// 满分动画先放，确保在最底层
+		if (isPerfect) {
+			// 直接调用全屏放礼花，添加到舞台而非面板中
+			this.showFireworks(this);
+		}
+		
+		// 用Shape绘制背景色，但不使用全屏遮罩
 		let bg = new egret.Shape();
-		bg.graphics.beginFill(0x222222, 0.95);
+		bg.graphics.beginFill(0x222222, 0.9); // 调低透明度让礼花更明显
 		bg.graphics.drawRoundRect(0, 0, 500, 300, 20, 20);
 		bg.graphics.endFill();
 		panel.addChild(bg);
@@ -837,11 +839,6 @@ private update(x, y) {
 		}
 		panel.addChild(label);
 
-		// 满分动画
-		if (isPerfect) {
-			this.showFireworks(panel);
-		}
-
 		let btn = new eui.Button();
 		btn.label = '重新开始';
 		btn.width = 160;
@@ -850,7 +847,6 @@ private update(x, y) {
 		btn.bottom = 40;
 		btn.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
 			if (panel.parent) panel.parent.removeChild(panel);
-			if (maskShape.parent) maskShape.parent.removeChild(maskShape);
 			
 			// 重新洗牌词库顺序
 			this.quizOrder = this.shuffleOrder(this.wordList.length);
@@ -866,22 +862,87 @@ private update(x, y) {
 	}
 
 	// 简单彩色礼花动画
-	private showFireworks(parent: eui.Group) {
-		for (let i = 0; i < 12; i++) {
+	private showFireworks(parent: egret.DisplayObjectContainer) {
+		// 创建更多、更大的礼花粒子
+		const particleCount = 100; // 增加粒子数量
+		const screenWidth = this.stage.stageWidth;
+		const screenHeight = this.stage.stageHeight;
+		
+		// 创建多组礼花，不同位置爆发
+		const burstCount = 5;
+		for (let b = 0; b < burstCount; b++) {
+			// 随机爆发点
+			const burstX = Math.random() * screenWidth * 0.8 + screenWidth * 0.1;
+			const burstY = Math.random() * screenHeight * 0.6 + screenHeight * 0.2;
+			
+			// 每组礼花的粒子
+			for (let i = 0; i < particleCount / burstCount; i++) {
+				let color = Math.floor(Math.random() * 0xffffff);
+				let circle = new egret.Shape();
+				circle.graphics.beginFill(color);
+				circle.graphics.drawCircle(0, 0, 3 + Math.random() * 8);
+				circle.graphics.endFill();
+				circle.x = burstX;
+				circle.y = burstY;
+				parent.addChild(circle);
+				
+				// 随机角度和距离
+				let angle = Math.random() * Math.PI * 2;
+				let distance = 50 + Math.random() * 300;
+				let tx = circle.x + Math.cos(angle) * distance;
+				let ty = circle.y + Math.sin(angle) * distance;
+				
+				// 添加闪烁效果和随机速度
+				const duration = 800 + Math.random() * 1200;
+				egret.Tween.get(circle)
+					.to({ x: tx, y: ty, alpha: 0.8 }, duration * 0.5)
+					.to({ alpha: 0 }, duration * 0.5)
+					.call(() => { 
+						if (circle.parent) circle.parent.removeChild(circle); 
+					});
+			}
+		}
+		
+		// 添加3秒后再次爆发的效果，增强持续感
+		setTimeout(() => {
+			if (parent.stage) { // 确保还在舞台上
+				this.showDelayedFireworks(parent);
+			}
+		}, 800);
+	}
+	
+	// 延迟爆发的第二波礼花
+	private showDelayedFireworks(parent: egret.DisplayObjectContainer) {
+		const particleCount = 80;
+		const screenWidth = this.stage.stageWidth;
+		const screenHeight = this.stage.stageHeight;
+		
+		// 随机爆发点
+		const burstX = Math.random() * screenWidth * 0.8 + screenWidth * 0.1;
+		const burstY = Math.random() * screenHeight * 0.6 + screenHeight * 0.2;
+		
+		for (let i = 0; i < particleCount; i++) {
 			let color = Math.floor(Math.random() * 0xffffff);
 			let circle = new egret.Shape();
 			circle.graphics.beginFill(color);
-			circle.graphics.drawCircle(0, 0, 12 + Math.random() * 8);
+			circle.graphics.drawCircle(0, 0, 2 + Math.random() * 6);
 			circle.graphics.endFill();
-			circle.x = 250;
-			circle.y = 180;
+			circle.x = burstX;
+			circle.y = burstY;
 			parent.addChild(circle);
-			let angle = (i / 12) * Math.PI * 2;
-			let tx = circle.x + Math.cos(angle) * 120;
-			let ty = circle.y + Math.sin(angle) * 80;
+			
+			let angle = Math.random() * Math.PI * 2;
+			let distance = 50 + Math.random() * 250;
+			let tx = circle.x + Math.cos(angle) * distance;
+			let ty = circle.y + Math.sin(angle) * distance;
+			
+			const duration = 700 + Math.random() * 1000;
 			egret.Tween.get(circle)
-				.to({ x: tx, y: ty, alpha: 0 }, 1200 + Math.random() * 400)
-				.call(() => { if (circle.parent) circle.parent.removeChild(circle); });
+				.to({ x: tx, y: ty, alpha: 0.7 }, duration * 0.6)
+				.to({ alpha: 0 }, duration * 0.4)
+				.call(() => { 
+					if (circle.parent) circle.parent.removeChild(circle); 
+				});
 		}
 	}
 }
