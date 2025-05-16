@@ -281,8 +281,27 @@ var GameScene = (function (_super) {
     // 2. 加载词库，优先网络，失败用本地
     GameScene.prototype.loadWordList = function () {
         var self = this;
+        // 从URL参数中获取bookId和unitId
+        var bookId = "48";
+        var unitId = "236";
+        try {
+            // 尝试从URL参数中获取
+            var urlParams = new URLSearchParams(window.location.search);
+            var urlBookId = urlParams.get('bookId');
+            var urlUnitId = urlParams.get('unitId');
+            // 如果URL中有参数，则使用URL参数值
+            if (urlBookId)
+                bookId = urlBookId;
+            if (urlUnitId)
+                unitId = urlUnitId;
+            console.log("\u4ECEURL\u83B7\u53D6\u53C2\u6570: bookId=" + bookId + ", unitId=" + unitId);
+        }
+        catch (e) {
+            console.error("获取URL参数失败:", e);
+            // 失败时使用默认值
+        }
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'https://res.yourwind.fun/py/get_bookunit_word?refresh=0&bookId=48&unitId=236', true);
+        xhr.open('GET', "https://res.yourwind.fun/py/get_bookunit_word?refresh=0&bookId=" + bookId + "&unitId=" + unitId, true);
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
