@@ -386,26 +386,6 @@ private update(x, y) {
 		panel.addChild(wordLabel);
 		this.quizWordLabel = wordLabel;
 		
-		// 添加播放音频按钮
-		let playBtn = new eui.Button();
-		playBtn.skinName = "skins.ButtonSkin"; // 使用默认按钮皮肤
-		playBtn.label = "再听一次";
-		playBtn.width = 120;
-		playBtn.height = 40;
-		playBtn.horizontalCenter = 0;
-		playBtn.top = 80;
-		playBtn.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-			// 再听一次当前单词的音频
-			if (this.wordAudio) {
-				if (this.wordAudioChannel) {
-					this.wordAudioChannel.stop();
-				}
-				this.wordAudioChannel = this.wordAudio.play(0, 1);
-			}
-		}, this);
-		panel.addChild(playBtn);
-		this.playAudioBtn = playBtn;
-		
 		// 选项按钮
 		this.quizOptionBtns = [];
 		for (let i = 0; i < 3; i++) {
@@ -414,7 +394,7 @@ private update(x, y) {
 			btn.width = 160;
 			btn.height = 60;
 			btn.horizontalCenter = (i === 1 ? 120 : (i === 0 ? -120 : 0));
-			btn.top = 130 + (i === 2 ? 80 : 0); // 调整位置，留出空间给播放按钮
+			btn.top = 130 + (i === 2 ? 60 : 0); // 第三个按钮向上移20像素，避免与时间重叠
 			btn.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onQuizOptionTap, this);
 			panel.addChild(btn);
 			this.quizOptionBtns.push(btn);
@@ -425,7 +405,7 @@ private update(x, y) {
 		timeLabel.size = 32;
 		timeLabel.textColor = 0xffff00;
 		timeLabel.horizontalCenter = 0;
-		timeLabel.bottom = 30;
+		timeLabel.bottom = 15;
 		panel.addChild(timeLabel);
 		this.quizTimeLabel = timeLabel;
 		// 添加到场景
