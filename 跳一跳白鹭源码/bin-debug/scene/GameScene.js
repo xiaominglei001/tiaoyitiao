@@ -43,6 +43,9 @@ var GameScene = (function (_super) {
         _this.quizAnswer = '';
         _this.quizOptionBtns = [];
         _this.quizIsActive = false;
+        // 1. 新增变量：答题顺序和答题结果
+        _this.quizOrder = [];
+        _this.quizResult = [];
         return _this;
     }
     GameScene.prototype.partAdded = function (partName, instance) {
@@ -287,6 +290,8 @@ var GameScene = (function (_super) {
                         if (res.data && res.data.length > 0) {
                             // 题库格式兼容
                             self.wordList = res.data[0];
+                            self.quizOrder = self.shuffleOrder(self.wordList.length);
+                            self.quizResult = [];
                             self.currentWordIndex = 0;
                             self.showQuizPanel();
                             return;
@@ -304,6 +309,8 @@ var GameScene = (function (_super) {
                                 var data = JSON.parse(localXhr_1.responseText);
                                 if (data && data.data && data.data.length > 0) {
                                     self.wordList = data.data[0];
+                                    self.quizOrder = self.shuffleOrder(self.wordList.length);
+                                    self.quizResult = [];
                                     self.currentWordIndex = 0;
                                     self.showQuizPanel();
                                     return;
@@ -319,17 +326,33 @@ var GameScene = (function (_super) {
         };
         xhr.send();
     };
+    // 新增打乱顺序方法
+    GameScene.prototype.shuffleOrder = function (len) {
+        var arr = Array.from({ length: len }, function (_, i) { return i; });
+        for (var i = arr.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            _a = [arr[j], arr[i]], arr[i] = _a[0], arr[j] = _a[1];
+        }
+        return arr;
+        var _a;
+    };
     // 3. 题目弹窗生成与逻辑
     GameScene.prototype.showQuizPanel = function () {
         if (!this.wordList || this.wordList.length === 0)
             return;
+        if (this.currentWordIndex >= this.wordList.length) {
+            // 全部答完，统计分数
+            var correctCount = this.quizResult.filter(function (x) { return x; }).length;
+            var isPerfect = correctCount === this.wordList.length;
+            this.showFinalPanel(isPerfect, correctCount, this.wordList.length);
+            return;
+        }
         this.quizIsActive = true;
-        // 先移除旧弹窗
         if (this.quizPanel && this.quizPanel.parent) {
             this.quizPanel.parent.removeChild(this.quizPanel);
         }
-        // 取当前单词
-        var word = this.wordList[this.currentWordIndex];
+        // 取当前单词（按乱序）
+        var word = this.wordList[this.quizOrder[this.currentWordIndex]];
         // 加载并播放单词音频
         this.loadAndPlayWordAudio(word.ourWordAudio);
         // 随机生成选项
@@ -438,12 +461,11 @@ var GameScene = (function (_super) {
     };
     // 4. 处理答题结果，前进/后退
     GameScene.prototype.handleQuizResult = function (isCorrect) {
+        this.quizResult[this.currentWordIndex] = isCorrect;
         if (isCorrect) {
-            // 正确，前进一格
             this.jumpForward();
         }
         else {
-            // 错误，只减分不后退
             this.reduceScore();
         }
     };
@@ -713,6 +735,80 @@ var GameScene = (function (_super) {
         }, this);
         // 加载音频URL
         sound.load(audioUrl);
+    };
+    // 新增 showFinalPanel 方法
+    GameScene.prototype.showFinalPanel = function (isPerfect, correctCount, total) {
+        var _this = this;
+        // 遮罩
+        var maskShape = new egret.Shape();
+        maskShape.graphics.beginFill(0x000000, 0.5);
+        maskShape.graphics.drawRect(0, 0, this.width, this.height);
+        maskShape.graphics.endFill();
+        this.addChild(maskShape);
+        var panel = new eui.Group();
+        panel.width = 500;
+        panel.height = 300;
+        panel.horizontalCenter = 0;
+        panel.verticalCenter = 0;
+        var bg = new egret.Shape();
+        bg.graphics.beginFill(0x222222, 0.95);
+        bg.graphics.drawRoundRect(0, 0, 500, 300, 20, 20);
+        bg.graphics.endFill();
+        panel.addChild(bg);
+        var label = new eui.Label();
+        label.size = 40;
+        label.textColor = 0xffffff;
+        label.horizontalCenter = 0;
+        label.top = 40;
+        if (isPerfect) {
+            label.text = "\u5168\u90E8\u56DE\u7B54\u6B63\u786E\uFF01\n\u5206\u6570\uFF1A" + correctCount + "/" + total;
+        }
+        else {
+            label.text = "\u7B54\u9898\u7ED3\u675F\uFF01\n\u5206\u6570\uFF1A" + correctCount + "/" + total;
+        }
+        panel.addChild(label);
+        // 满分动画
+        if (isPerfect) {
+            this.showFireworks(panel);
+        }
+        var btn = new eui.Button();
+        btn.label = '重新开始';
+        btn.width = 160;
+        btn.height = 60;
+        btn.horizontalCenter = 0;
+        btn.bottom = 40;
+        btn.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
+            if (panel.parent)
+                panel.parent.removeChild(panel);
+            if (maskShape.parent)
+                maskShape.parent.removeChild(maskShape);
+            _this.completeGameReset();
+        }, this);
+        panel.addChild(btn);
+        this.addChild(panel);
+    };
+    // 简单彩色礼花动画
+    GameScene.prototype.showFireworks = function (parent) {
+        var _loop_1 = function (i) {
+            var color = Math.floor(Math.random() * 0xffffff);
+            var circle = new egret.Shape();
+            circle.graphics.beginFill(color);
+            circle.graphics.drawCircle(0, 0, 12 + Math.random() * 8);
+            circle.graphics.endFill();
+            circle.x = 250;
+            circle.y = 180;
+            parent.addChild(circle);
+            var angle = (i / 12) * Math.PI * 2;
+            var tx = circle.x + Math.cos(angle) * 120;
+            var ty = circle.y + Math.sin(angle) * 80;
+            egret.Tween.get(circle)
+                .to({ x: tx, y: ty, alpha: 0 }, 1200 + Math.random() * 400)
+                .call(function () { if (circle.parent)
+                circle.parent.removeChild(circle); });
+        };
+        for (var i = 0; i < 12; i++) {
+            _loop_1(i);
+        }
     };
     return GameScene;
 }(eui.Component));

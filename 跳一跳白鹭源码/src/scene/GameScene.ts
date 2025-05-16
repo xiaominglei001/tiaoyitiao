@@ -64,6 +64,10 @@ class GameScene extends eui.Component implements eui.UIComponent {
 	private audioLoadingIcon: eui.Image; // 显示加载音频时的图标
 	private playAudioBtn: eui.Button; // 播放音频按钮
 
+	// 1. 新增变量：答题顺序和答题结果
+	private quizOrder: number[] = [];
+	private quizResult: boolean[] = [];
+
 	public constructor() {
 		super();
 	}
@@ -309,6 +313,8 @@ private update(x, y) {
 						if (res.data && res.data.length > 0) {
 							// 题库格式兼容
 							self.wordList = res.data[0];
+							self.quizOrder = self.shuffleOrder(self.wordList.length);
+							self.quizResult = [];
 							self.currentWordIndex = 0;
 							self.showQuizPanel();
 							return;
@@ -325,6 +331,8 @@ private update(x, y) {
 								let data = JSON.parse(localXhr.responseText);
 								if (data && data.data && data.data.length > 0) {
 									self.wordList = data.data[0];
+									self.quizOrder = self.shuffleOrder(self.wordList.length);
+									self.quizResult = [];
 									self.currentWordIndex = 0;
 									self.showQuizPanel();
 									return;
@@ -339,16 +347,31 @@ private update(x, y) {
 		};
 		xhr.send();
 	}
+	// 新增打乱顺序方法
+	private shuffleOrder(len: number): number[] {
+		let arr = Array.from({length: len}, (_, i) => i);
+		for (let i = arr.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[arr[i], arr[j]] = [arr[j], arr[i]];
+		}
+		return arr;
+	}
 	// 3. 题目弹窗生成与逻辑
 	private showQuizPanel() {
 		if (!this.wordList || this.wordList.length === 0) return;
+		if (this.currentWordIndex >= this.wordList.length) {
+			// 全部答完，统计分数
+			const correctCount = this.quizResult.filter(x => x).length;
+			const isPerfect = correctCount === this.wordList.length;
+			this.showFinalPanel(isPerfect, correctCount, this.wordList.length);
+			return;
+		}
 		this.quizIsActive = true;
-		// 先移除旧弹窗
 		if (this.quizPanel && this.quizPanel.parent) {
 			this.quizPanel.parent.removeChild(this.quizPanel);
 		}
-		// 取当前单词
-		let word = this.wordList[this.currentWordIndex];
+		// 取当前单词（按乱序）
+		let word = this.wordList[this.quizOrder[this.currentWordIndex]];
 		
 		// 加载并播放单词音频
 		this.loadAndPlayWordAudio(word.ourWordAudio);
@@ -458,11 +481,10 @@ private update(x, y) {
 	}
 	// 4. 处理答题结果，前进/后退
 	private handleQuizResult(isCorrect: boolean) {
+		this.quizResult[this.currentWordIndex] = isCorrect;
 		if (isCorrect) {
-			// 正确，前进一格
 			this.jumpForward();
 		} else {
-			// 错误，只减分不后退
 			this.reduceScore();
 		}
 	}
@@ -766,5 +788,76 @@ private update(x, y) {
 		
 		// 加载音频URL
 		sound.load(audioUrl);
+	}
+	// 新增 showFinalPanel 方法
+	private showFinalPanel(isPerfect: boolean, correctCount: number, total: number) {
+		// 遮罩
+		let maskShape = new egret.Shape();
+		maskShape.graphics.beginFill(0x000000, 0.5);
+		maskShape.graphics.drawRect(0, 0, this.width, this.height);
+		maskShape.graphics.endFill();
+		this.addChild(maskShape);
+
+		let panel = new eui.Group();
+		panel.width = 500;
+		panel.height = 300;
+		panel.horizontalCenter = 0;
+		panel.verticalCenter = 0;
+		let bg = new egret.Shape();
+		bg.graphics.beginFill(0x222222, 0.95);
+		bg.graphics.drawRoundRect(0, 0, 500, 300, 20, 20);
+		bg.graphics.endFill();
+		panel.addChild(bg);
+
+		let label = new eui.Label();
+		label.size = 40;
+		label.textColor = 0xffffff;
+		label.horizontalCenter = 0;
+		label.top = 40;
+		if (isPerfect) {
+			label.text = `全部回答正确！\n分数：${correctCount}/${total}`;
+		} else {
+			label.text = `答题结束！\n分数：${correctCount}/${total}`;
+		}
+		panel.addChild(label);
+
+		// 满分动画
+		if (isPerfect) {
+			this.showFireworks(panel);
+		}
+
+		let btn = new eui.Button();
+		btn.label = '重新开始';
+		btn.width = 160;
+		btn.height = 60;
+		btn.horizontalCenter = 0;
+		btn.bottom = 40;
+		btn.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+			if (panel.parent) panel.parent.removeChild(panel);
+			if (maskShape.parent) maskShape.parent.removeChild(maskShape);
+			this.completeGameReset();
+		}, this);
+		panel.addChild(btn);
+		this.addChild(panel);
+	}
+
+	// 简单彩色礼花动画
+	private showFireworks(parent: eui.Group) {
+		for (let i = 0; i < 12; i++) {
+			let color = Math.floor(Math.random() * 0xffffff);
+			let circle = new egret.Shape();
+			circle.graphics.beginFill(color);
+			circle.graphics.drawCircle(0, 0, 12 + Math.random() * 8);
+			circle.graphics.endFill();
+			circle.x = 250;
+			circle.y = 180;
+			parent.addChild(circle);
+			let angle = (i / 12) * Math.PI * 2;
+			let tx = circle.x + Math.cos(angle) * 120;
+			let ty = circle.y + Math.sin(angle) * 80;
+			egret.Tween.get(circle)
+				.to({ x: tx, y: ty, alpha: 0 }, 1200 + Math.random() * 400)
+				.call(() => { if (circle.parent) circle.parent.removeChild(circle); });
+		}
 	}
 }
