@@ -405,9 +405,9 @@ private update(x, y) {
 		timeLabel.size = 32;
 		timeLabel.textColor = 0xffff00;
 		timeLabel.horizontalCenter = 0;
-		timeLabel.bottom = 30;
-		panel.addChild(timeLabel);
-		this.quizTimeLabel = timeLabel;
+		timeLabel.bottom = 10;
+        panel.addChild(timeLabel);
+        this.quizTimeLabel = timeLabel;
 		// 添加到场景
 		this.addChild(panel);
 		this.quizPanel = panel;

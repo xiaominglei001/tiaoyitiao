@@ -384,7 +384,7 @@ var GameScene = (function (_super) {
         timeLabel.size = 32;
         timeLabel.textColor = 0xffff00;
         timeLabel.horizontalCenter = 0;
-        timeLabel.bottom = 30;
+        timeLabel.bottom = 10;
         panel.addChild(timeLabel);
         this.quizTimeLabel = timeLabel;
         // 添加到场景
