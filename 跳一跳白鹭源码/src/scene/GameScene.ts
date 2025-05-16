@@ -367,13 +367,13 @@ private update(x, y) {
 		// 创建弹窗
 		let panel = new eui.Group();
 		panel.width = 500;
-		panel.height = 300;
+		panel.height = 400;
 		panel.horizontalCenter = 0;
 		panel.verticalCenter = 0;
 		// 用Shape绘制背景色
 		let bg = new egret.Shape();
 		bg.graphics.beginFill(0x222222, 0.95);
-		bg.graphics.drawRoundRect(0, 0, 500, 300, 20, 20);
+		bg.graphics.drawRoundRect(0, 0, 500, 400, 20, 20);
 		bg.graphics.endFill();
 		panel.addChild(bg);
 		// 英文单词
@@ -393,8 +393,8 @@ private update(x, y) {
 			btn.label = options[i];
 			btn.width = 160;
 			btn.height = 60;
-			btn.horizontalCenter = (i === 1 ? 120 : (i === 0 ? -120 : 0));
-			btn.top = 130 + (i === 2 ? 60 : 0); // 第三个按钮向上移20像素，避免与时间重叠
+			btn.horizontalCenter = 0;
+			btn.top = 120 + i * 80;
 			btn.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onQuizOptionTap, this);
 			panel.addChild(btn);
 			this.quizOptionBtns.push(btn);
@@ -405,7 +405,7 @@ private update(x, y) {
 		timeLabel.size = 32;
 		timeLabel.textColor = 0xffff00;
 		timeLabel.horizontalCenter = 0;
-		timeLabel.bottom = 15;
+		timeLabel.bottom = 30;
 		panel.addChild(timeLabel);
 		this.quizTimeLabel = timeLabel;
 		// 添加到场景
