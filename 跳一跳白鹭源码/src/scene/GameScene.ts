@@ -444,9 +444,50 @@ private update(x, y) {
 			// 正确，前进一格
 			this.jumpForward();
 		} else {
-			// 错误，后退一格
-			this.jumpBackward();
+			// 错误，只减分不后退
+			this.reduceScore();
 		}
+	}
+	// 新方法：只减分，不后退
+	private reduceScore() {
+		// 减少分数
+		if (this.score > 0) {
+			this.score--;
+			this.scoreLabel.text = this.score.toString();
+			
+			// 显示分数减少的提示（可选）
+			this.showScoreReduceTip();
+			
+			// 继续下一题
+			this.currentWordIndex++;
+			if (this.currentWordIndex >= this.wordList.length) {
+				this.currentWordIndex = 0;
+			}
+			this.showQuizPanel();
+		} else {
+			// 分数已为0，提示是否重新开始
+			this.showRestartPanel();
+		}
+	}
+	// 显示分数减少的提示
+	private showScoreReduceTip() {
+		// 创建一个临时文本提示
+		let tipLabel = new eui.Label();
+		tipLabel.text = "-1";
+		tipLabel.size = 40;
+		tipLabel.textColor = 0xff0000;
+		tipLabel.x = this.scoreLabel.x + this.scoreLabel.width + 10;
+		tipLabel.y = this.scoreLabel.y;
+		this.addChild(tipLabel);
+		
+		// 添加动画效果
+		egret.Tween.get(tipLabel)
+			.to({ y: tipLabel.y - 50, alpha: 0 }, 1000)
+			.call(() => {
+				if (tipLabel.parent) {
+					tipLabel.parent.removeChild(tipLabel);
+				}
+			});
 	}
 	// 前进一格
 	private jumpForward() {
@@ -530,8 +571,9 @@ private update(x, y) {
 			};
 		}, 300); // 只需短暂延迟，模拟按压感
 	}
-	// 后退一格
+	// 后退一格（保留方法但不再使用，除非需要恢复此功能）
 	private jumpBackward() {
+		// 此方法保留但不再使用
 		// 回退到上一个方块，或初始位置
 		if (this.score > 0) {
 			this.score--;
