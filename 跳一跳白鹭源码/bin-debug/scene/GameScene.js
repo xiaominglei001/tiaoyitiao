@@ -340,19 +340,18 @@ var GameScene = (function (_super) {
     GameScene.prototype.showQuizPanel = function () {
         if (!this.wordList || this.wordList.length === 0)
             return;
-        if (this.currentWordIndex >= this.wordList.length) {
+        if (this.quizOrder.length === 0) {
             // 全部答完，统计分数
             var correctCount = this.quizResult.filter(function (x) { return x; }).length;
             var isPerfect = correctCount === this.wordList.length;
             this.showFinalPanel(isPerfect, correctCount, this.wordList.length);
             return;
         }
-        this.quizIsActive = true;
         if (this.quizPanel && this.quizPanel.parent) {
             this.quizPanel.parent.removeChild(this.quizPanel);
         }
         // 取当前单词（按乱序）
-        var word = this.wordList[this.quizOrder[this.currentWordIndex]];
+        var word = this.wordList[this.quizOrder[0]];
         // 加载并播放单词音频
         this.loadAndPlayWordAudio(word.ourWordAudio);
         // 随机生成选项
@@ -425,6 +424,8 @@ var GameScene = (function (_super) {
         this.quizTimer.addEventListener(egret.TimerEvent.TIMER, this.onQuizTimer, this);
         this.quizTimer.addEventListener(egret.TimerEvent.TIMER_COMPLETE, this.onQuizTimeout, this);
         this.quizTimer.start();
+        // 激活题目响应状态，使选项可点击
+        this.quizIsActive = true;
     };
     // 选项点击
     GameScene.prototype.onQuizOptionTap = function (e) {
@@ -461,8 +462,11 @@ var GameScene = (function (_super) {
     };
     // 4. 处理答题结果，前进/后退
     GameScene.prototype.handleQuizResult = function (isCorrect) {
-        this.quizResult[this.currentWordIndex] = isCorrect;
+        var idx = this.quizOrder[0];
+        this.quizResult[idx] = isCorrect;
         if (isCorrect) {
+            // 答对后移除该单词
+            this.quizOrder.shift();
             this.jumpForward();
         }
         else {
@@ -483,10 +487,6 @@ var GameScene = (function (_super) {
                 return; // 防止继续显示下一题
             }
             // 继续下一题
-            this.currentWordIndex++;
-            if (this.currentWordIndex >= this.wordList.length) {
-                this.currentWordIndex = 0;
-            }
             this.showQuizPanel();
         }
         else {
@@ -568,11 +568,6 @@ var GameScene = (function (_super) {
                     // 让屏幕重新可点
                     _this.blockPanel.touchEnabled = true;
                     // 进入下一题
-                    _this.currentWordIndex++;
-                    if (_this.currentWordIndex >= _this.wordList.length) {
-                        _this.currentWordIndex = 0;
-                    }
-                    // 跳跃完成后显示下一题
                     _this.showQuizPanel();
                 });
             };
@@ -673,12 +668,18 @@ var GameScene = (function (_super) {
         // 重置分数
         this.score = 0;
         this.scoreLabel.text = this.score.toString();
-        // 重置词库索引
-        this.currentWordIndex = 0;
-        // 清除所有方块和相关对象
-        this.blockPanel.removeChildren();
-        this.blockArr = [];
-        this.reBackBlockArr = [];
+        // 确保所有计时器和动画停止
+        egret.Tween.removeAllTweens();
+        if (this.quizTimer) {
+            this.quizTimer.stop();
+            this.quizTimer.removeEventListener(egret.TimerEvent.TIMER, this.onQuizTimer, this);
+            this.quizTimer.removeEventListener(egret.TimerEvent.TIMER_COMPLETE, this.onQuizTimeout, this);
+        }
+        // 确保弹窗被移除
+        if (this.quizPanel && this.quizPanel.parent) {
+            this.quizPanel.parent.removeChild(this.quizPanel);
+            this.quizPanel = null;
+        }
         // 重置玩家位置状态
         this.player.rotation = 0;
         this.player.scaleY = 1;
@@ -686,15 +687,14 @@ var GameScene = (function (_super) {
         this.jumpDistance = 0;
         // 重置方向
         this.direction = 1;
-        // 停止所有计时器和动画
-        egret.Tween.removeAllTweens();
-        if (this.quizTimer) {
-            this.quizTimer.stop();
-            this.quizTimer.removeEventListener(egret.TimerEvent.TIMER, this.onQuizTimer, this);
-            this.quizTimer.removeEventListener(egret.TimerEvent.TIMER_COMPLETE, this.onQuizTimeout, this);
-        }
+        // 清除所有方块和相关对象
+        this.blockPanel.removeChildren();
+        this.blockArr = [];
+        this.reBackBlockArr = [];
         // 重置场景（调用原有的reset方法）
         this.reset();
+        // 确保场景可交互
+        this.blockPanel.touchEnabled = true;
         // 重新显示题目
         this.showQuizPanel();
     };
@@ -782,6 +782,11 @@ var GameScene = (function (_super) {
                 panel.parent.removeChild(panel);
             if (maskShape.parent)
                 maskShape.parent.removeChild(maskShape);
+            // 重新洗牌词库顺序
+            _this.quizOrder = _this.shuffleOrder(_this.wordList.length);
+            _this.quizResult = [];
+            _this.currentWordIndex = 0;
+            // 完全重置游戏到初始状态
             _this.completeGameReset();
         }, this);
         panel.addChild(btn);

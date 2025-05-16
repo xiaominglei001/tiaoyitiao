@@ -359,19 +359,18 @@ private update(x, y) {
 	// 3. 题目弹窗生成与逻辑
 	private showQuizPanel() {
 		if (!this.wordList || this.wordList.length === 0) return;
-		if (this.currentWordIndex >= this.wordList.length) {
+		if (this.quizOrder.length === 0) {
 			// 全部答完，统计分数
 			const correctCount = this.quizResult.filter(x => x).length;
 			const isPerfect = correctCount === this.wordList.length;
 			this.showFinalPanel(isPerfect, correctCount, this.wordList.length);
 			return;
 		}
-		this.quizIsActive = true;
 		if (this.quizPanel && this.quizPanel.parent) {
 			this.quizPanel.parent.removeChild(this.quizPanel);
 		}
 		// 取当前单词（按乱序）
-		let word = this.wordList[this.quizOrder[this.currentWordIndex]];
+		let word = this.wordList[this.quizOrder[0]];
 		
 		// 加载并播放单词音频
 		this.loadAndPlayWordAudio(word.ourWordAudio);
@@ -446,6 +445,9 @@ private update(x, y) {
 		this.quizTimer.addEventListener(egret.TimerEvent.TIMER, this.onQuizTimer, this);
 		this.quizTimer.addEventListener(egret.TimerEvent.TIMER_COMPLETE, this.onQuizTimeout, this);
 		this.quizTimer.start();
+		
+		// 激活题目响应状态，使选项可点击
+		this.quizIsActive = true;
 	}
 	// 选项点击
 	private onQuizOptionTap(e: egret.TouchEvent) {
@@ -481,8 +483,11 @@ private update(x, y) {
 	}
 	// 4. 处理答题结果，前进/后退
 	private handleQuizResult(isCorrect: boolean) {
-		this.quizResult[this.currentWordIndex] = isCorrect;
+		const idx = this.quizOrder[0];
+		this.quizResult[idx] = isCorrect;
 		if (isCorrect) {
+			// 答对后移除该单词
+			this.quizOrder.shift();
 			this.jumpForward();
 		} else {
 			this.reduceScore();
@@ -505,10 +510,6 @@ private update(x, y) {
 			}
 			
 			// 继续下一题
-			this.currentWordIndex++;
-			if (this.currentWordIndex >= this.wordList.length) {
-				this.currentWordIndex = 0;
-			}
 			this.showQuizPanel();
 		} else {
 			// 分数已为0，提示是否重新开始
@@ -606,12 +607,6 @@ private update(x, y) {
 					this.blockPanel.touchEnabled = true;
 					
 					// 进入下一题
-					this.currentWordIndex++;
-					if (this.currentWordIndex >= this.wordList.length) {
-						this.currentWordIndex = 0;
-					}
-					
-					// 跳跃完成后显示下一题
 					this.showQuizPanel();
 				});
 			};
@@ -714,13 +709,19 @@ private update(x, y) {
 		this.score = 0;
 		this.scoreLabel.text = this.score.toString();
 		
-		// 重置词库索引
-		this.currentWordIndex = 0;
+		// 确保所有计时器和动画停止
+		egret.Tween.removeAllTweens();
+		if (this.quizTimer) {
+			this.quizTimer.stop();
+			this.quizTimer.removeEventListener(egret.TimerEvent.TIMER, this.onQuizTimer, this);
+			this.quizTimer.removeEventListener(egret.TimerEvent.TIMER_COMPLETE, this.onQuizTimeout, this);
+		}
 		
-		// 清除所有方块和相关对象
-		this.blockPanel.removeChildren();
-		this.blockArr = [];
-		this.reBackBlockArr = [];
+		// 确保弹窗被移除
+		if (this.quizPanel && this.quizPanel.parent) {
+			this.quizPanel.parent.removeChild(this.quizPanel);
+			this.quizPanel = null;
+		}
 		
 		// 重置玩家位置状态
 		this.player.rotation = 0;
@@ -731,16 +732,16 @@ private update(x, y) {
 		// 重置方向
 		this.direction = 1;
 		
-		// 停止所有计时器和动画
-		egret.Tween.removeAllTweens();
-		if (this.quizTimer) {
-			this.quizTimer.stop();
-			this.quizTimer.removeEventListener(egret.TimerEvent.TIMER, this.onQuizTimer, this);
-			this.quizTimer.removeEventListener(egret.TimerEvent.TIMER_COMPLETE, this.onQuizTimeout, this);
-		}
+		// 清除所有方块和相关对象
+		this.blockPanel.removeChildren();
+		this.blockArr = [];
+		this.reBackBlockArr = [];
 		
 		// 重置场景（调用原有的reset方法）
 		this.reset();
+		
+		// 确保场景可交互
+		this.blockPanel.touchEnabled = true;
 		
 		// 重新显示题目
 		this.showQuizPanel();
@@ -835,6 +836,13 @@ private update(x, y) {
 		btn.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
 			if (panel.parent) panel.parent.removeChild(panel);
 			if (maskShape.parent) maskShape.parent.removeChild(maskShape);
+			
+			// 重新洗牌词库顺序
+			this.quizOrder = this.shuffleOrder(this.wordList.length);
+			this.quizResult = [];
+			this.currentWordIndex = 0;
+			
+			// 完全重置游戏到初始状态
 			this.completeGameReset();
 		}, this);
 		panel.addChild(btn);
