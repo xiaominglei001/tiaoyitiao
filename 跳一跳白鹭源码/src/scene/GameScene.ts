@@ -63,6 +63,8 @@ class GameScene extends eui.Component implements eui.UIComponent {
 	private wordAudioChannel: egret.SoundChannel;
 	private audioLoadingIcon: eui.Image; // 显示加载音频时的图标
 	private playAudioBtn: eui.Button; // 播放音频按钮
+	// 新增弹窗背景遮罩
+	private quizMask: egret.Shape;
 
 	// 1. 新增变量：答题顺序和答题结果
 	private quizOrder: number[] = [];
@@ -387,9 +389,23 @@ private update(x, y) {
 			this.showFinalPanel(isPerfect, correctCount, this.wordList.length);
 			return;
 		}
+		
+		// 禁用游戏场景的触控事件，确保只能点击弹窗
+		this.blockPanel.touchEnabled = false;
+		
 		if (this.quizPanel && this.quizPanel.parent) {
 			this.quizPanel.parent.removeChild(this.quizPanel);
 		}
+		
+		// 创建全屏遮罩阻止点击
+		let maskShape = new egret.Shape();
+		maskShape.graphics.beginFill(0x000000, 0.01); // 几乎透明但能拦截点击
+		maskShape.graphics.drawRect(0, 0, this.stage.stageWidth, this.stage.stageHeight);
+		maskShape.graphics.endFill();
+		maskShape.touchEnabled = true; // 确保可接收触摸事件
+		this.addChild(maskShape);
+		this.quizMask = maskShape; // 保存遮罩引用
+		
 		// 取当前单词（按乱序）
 		let word = this.wordList[this.quizOrder[0]];
 		
@@ -496,6 +512,11 @@ private update(x, y) {
 		if (this.wordAudioChannel) {
 			this.wordAudioChannel.stop();
 			this.wordAudioChannel = null;
+		}
+		
+		// 移除遮罩
+		if (this.quizMask && this.quizMask.parent) {
+			this.quizMask.parent.removeChild(this.quizMask);
 		}
 		
 		if (this.quizPanel && this.quizPanel.parent) {
@@ -717,9 +738,16 @@ private update(x, y) {
 		btn.horizontalCenter = 0;
 		btn.bottom = 40;
 		btn.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-			// 移除弹窗和遮罩
 			if (panel.parent) panel.parent.removeChild(panel);
+			
+			// 移除遮罩
 			if (maskShape.parent) maskShape.parent.removeChild(maskShape);
+			
+			// 重新洗牌词库顺序
+			this.quizOrder = this.shuffleOrder(this.wordList.length);
+			this.quizResult = [];
+			this.currentWordIndex = 0;
+			this.hadWrongAnswer = false; // 重置错误回答标志
 			
 			// 完全重置游戏到初始状态
 			this.completeGameReset();
@@ -819,6 +847,9 @@ private update(x, y) {
 	}
 	// 新增 showFinalPanel 方法
 	private showFinalPanel(isPerfect: boolean, correctCount: number, total: number) {
+		// 禁用游戏场景触控
+		this.blockPanel.touchEnabled = false;
+		
 		// 创建结果面板
 		let panel = new eui.Group();
 		panel.width = 500;
@@ -831,6 +862,14 @@ private update(x, y) {
 			// 直接调用全屏放礼花，添加到舞台而非面板中
 			this.showFireworks(this);
 		}
+		
+		// 创建全屏遮罩阻止点击，但允许礼花显示
+		let maskShape = new egret.Shape();
+		maskShape.graphics.beginFill(0x000000, 0.01); // 几乎透明但能拦截点击
+		maskShape.graphics.drawRect(0, 0, this.stage.stageWidth, this.stage.stageHeight);
+		maskShape.graphics.endFill();
+		maskShape.touchEnabled = true; // 确保可接收触摸事件
+		this.addChild(maskShape);
 		
 		// 用Shape绘制背景色，但不使用全屏遮罩
 		let bg = new egret.Shape();
@@ -863,6 +902,9 @@ private update(x, y) {
 		btn.bottom = 40;
 		btn.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
 			if (panel.parent) panel.parent.removeChild(panel);
+			
+			// 移除遮罩
+			if (maskShape.parent) maskShape.parent.removeChild(maskShape);
 			
 			// 重新洗牌词库顺序
 			this.quizOrder = this.shuffleOrder(this.wordList.length);

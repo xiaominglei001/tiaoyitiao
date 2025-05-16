@@ -282,8 +282,7 @@ var GameScene = (function (_super) {
     GameScene.prototype.loadWordList = function () {
         var self = this;
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'http://yourwind.site:15001/py/get_bookunit_word?refresh=0&bookId=48&unitId=235', true);
-        xhr.setRequestHeader('Referer', 'https://www.yourwind.fun');
+        xhr.open('GET', 'https://res.yourwind.fun/py/get_bookunit_word?refresh=0&bookId=48&unitId=236', true);
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
@@ -369,9 +368,19 @@ var GameScene = (function (_super) {
             this.showFinalPanel(isPerfect, correctCount, this.wordList.length);
             return;
         }
+        // 禁用游戏场景的触控事件，确保只能点击弹窗
+        this.blockPanel.touchEnabled = false;
         if (this.quizPanel && this.quizPanel.parent) {
             this.quizPanel.parent.removeChild(this.quizPanel);
         }
+        // 创建全屏遮罩阻止点击
+        var maskShape = new egret.Shape();
+        maskShape.graphics.beginFill(0x000000, 0.01); // 几乎透明但能拦截点击
+        maskShape.graphics.drawRect(0, 0, this.stage.stageWidth, this.stage.stageHeight);
+        maskShape.graphics.endFill();
+        maskShape.touchEnabled = true; // 确保可接收触摸事件
+        this.addChild(maskShape);
+        this.quizMask = maskShape; // 保存遮罩引用
         // 取当前单词（按乱序）
         var word = this.wordList[this.quizOrder[0]];
         // 加载并播放单词音频
@@ -477,6 +486,10 @@ var GameScene = (function (_super) {
         if (this.wordAudioChannel) {
             this.wordAudioChannel.stop();
             this.wordAudioChannel = null;
+        }
+        // 移除遮罩
+        if (this.quizMask && this.quizMask.parent) {
+            this.quizMask.parent.removeChild(this.quizMask);
         }
         if (this.quizPanel && this.quizPanel.parent) {
             this.quizPanel.parent.removeChild(this.quizPanel);
@@ -676,11 +689,16 @@ var GameScene = (function (_super) {
         btn.horizontalCenter = 0;
         btn.bottom = 40;
         btn.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
-            // 移除弹窗和遮罩
             if (panel.parent)
                 panel.parent.removeChild(panel);
+            // 移除遮罩
             if (maskShape.parent)
                 maskShape.parent.removeChild(maskShape);
+            // 重新洗牌词库顺序
+            _this.quizOrder = _this.shuffleOrder(_this.wordList.length);
+            _this.quizResult = [];
+            _this.currentWordIndex = 0;
+            _this.hadWrongAnswer = false; // 重置错误回答标志
             // 完全重置游戏到初始状态
             _this.completeGameReset();
         }, this);
@@ -765,6 +783,8 @@ var GameScene = (function (_super) {
     // 新增 showFinalPanel 方法
     GameScene.prototype.showFinalPanel = function (isPerfect, correctCount, total) {
         var _this = this;
+        // 禁用游戏场景触控
+        this.blockPanel.touchEnabled = false;
         // 创建结果面板
         var panel = new eui.Group();
         panel.width = 500;
@@ -776,6 +796,13 @@ var GameScene = (function (_super) {
             // 直接调用全屏放礼花，添加到舞台而非面板中
             this.showFireworks(this);
         }
+        // 创建全屏遮罩阻止点击，但允许礼花显示
+        var maskShape = new egret.Shape();
+        maskShape.graphics.beginFill(0x000000, 0.01); // 几乎透明但能拦截点击
+        maskShape.graphics.drawRect(0, 0, this.stage.stageWidth, this.stage.stageHeight);
+        maskShape.graphics.endFill();
+        maskShape.touchEnabled = true; // 确保可接收触摸事件
+        this.addChild(maskShape);
         // 用Shape绘制背景色，但不使用全屏遮罩
         var bg = new egret.Shape();
         bg.graphics.beginFill(0x222222, 0.9); // 调低透明度让礼花更明显
@@ -808,6 +835,9 @@ var GameScene = (function (_super) {
         btn.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
             if (panel.parent)
                 panel.parent.removeChild(panel);
+            // 移除遮罩
+            if (maskShape.parent)
+                maskShape.parent.removeChild(maskShape);
             // 重新洗牌词库顺序
             _this.quizOrder = _this.shuffleOrder(_this.wordList.length);
             _this.quizResult = [];
