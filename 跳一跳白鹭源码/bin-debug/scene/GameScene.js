@@ -446,15 +446,19 @@ var GameScene = (function (_super) {
         this.blockPanel.touchEnabled = true;
         // 先模拟按下，角色变形
         this.onKeyDown();
-        // 设置一个合适的跳跃距离（可根据方块间距调整）
+        // 计算精确的跳跃距离，确保跳到方块中心
         setTimeout(function () {
-            // 根据方向设置合适的距离，确保能跳到下一个方块
-            if (_this.direction > 0) {
-                _this.jumpDistance = _this.minDistance + (_this.maxDistance - _this.minDistance) / 2;
-            }
-            else {
-                _this.jumpDistance = _this.minDistance + (_this.maxDistance - _this.minDistance) / 2;
-            }
+            // 计算当前方块与下一个方块之间的精确距离
+            var nextBlock = _this.currentBlock;
+            var currentPosition = { x: _this.player.x, y: _this.player.y };
+            // 计算水平和垂直距离
+            var deltaX = nextBlock.x - currentPosition.x;
+            var deltaY = nextBlock.y - currentPosition.y;
+            // 计算直线距离
+            var distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            // 设置精确的跳跃距离
+            // 由于跳跃距离在onKeyUp中会乘以direction，所以这里需要考虑方向
+            _this.jumpDistance = Math.abs(distance);
             // 模拟松开，触发跳跃
             _this.onKeyUp();
             // 在原有的judgeResult里增加分数和切换到下一题
@@ -465,6 +469,7 @@ var GameScene = (function (_super) {
             _this.judgeResult = function () {
                 // 还原原始方法，避免影响下次跳跃
                 _this.judgeResult = originalJudgeResult;
+                // 确保判定为跳跃成功
                 // 更新积分
                 _this.score++;
                 _this.scoreLabel.text = _this.score.toString();
@@ -496,7 +501,7 @@ var GameScene = (function (_super) {
                     _this.showQuizPanel();
                 });
             };
-        }, 800); // 模拟按压800毫秒
+        }, 300); // 只需短暂延迟，模拟按压感
     };
     // 后退一格
     GameScene.prototype.jumpBackward = function () {

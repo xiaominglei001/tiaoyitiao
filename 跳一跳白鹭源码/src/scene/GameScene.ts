@@ -458,14 +458,22 @@ private update(x, y) {
 		// 先模拟按下，角色变形
 		this.onKeyDown();
 		
-		// 设置一个合适的跳跃距离（可根据方块间距调整）
+		// 计算精确的跳跃距离，确保跳到方块中心
 		setTimeout(() => {
-			// 根据方向设置合适的距离，确保能跳到下一个方块
-			if (this.direction > 0) {
-				this.jumpDistance = this.minDistance + (this.maxDistance - this.minDistance) / 2;
-			} else {
-				this.jumpDistance = this.minDistance + (this.maxDistance - this.minDistance) / 2;
-			}
+			// 计算当前方块与下一个方块之间的精确距离
+			let nextBlock = this.currentBlock;
+			let currentPosition = { x: this.player.x, y: this.player.y };
+			
+			// 计算水平和垂直距离
+			let deltaX = nextBlock.x - currentPosition.x;
+			let deltaY = nextBlock.y - currentPosition.y;
+			
+			// 计算直线距离
+			let distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+			
+			// 设置精确的跳跃距离
+			// 由于跳跃距离在onKeyUp中会乘以direction，所以这里需要考虑方向
+			this.jumpDistance = Math.abs(distance);
 			
 			// 模拟松开，触发跳跃
 			this.onKeyUp();
@@ -481,6 +489,7 @@ private update(x, y) {
 				// 还原原始方法，避免影响下次跳跃
 				this.judgeResult = originalJudgeResult;
 				
+				// 确保判定为跳跃成功
 				// 更新积分
 				this.score++;
 				this.scoreLabel.text = this.score.toString();
@@ -519,7 +528,7 @@ private update(x, y) {
 					this.showQuizPanel();
 				});
 			};
-		}, 800); // 模拟按压800毫秒
+		}, 300); // 只需短暂延迟，模拟按压感
 	}
 	// 后退一格
 	private jumpBackward() {
