@@ -45,7 +45,19 @@ class GameScene extends eui.Component implements eui.UIComponent {
 	public overScoreLabel: eui.Label;
 	public restart: eui.Button;
 
-
+	// 1. 新增词库、题目索引、倒计时等变量
+	private wordList: Array<any> = [];
+	private currentWordIndex: number = 0;
+	private quizPanel: eui.Group; // 题目弹窗
+	private quizTimer: egret.Timer;
+	private quizTimeLeft: number = 10;
+	private quizTimeLabel: eui.Label;
+	private quizCallback: (isCorrect: boolean) => void;
+	private quizOptions: Array<any> = [];
+	private quizAnswer: string = '';
+	private quizOptionBtns: Array<eui.Button> = [];
+	private quizWordLabel: eui.Label;
+	private quizIsActive: boolean = false;
 
 	public constructor() {
 		super();
@@ -58,6 +70,8 @@ class GameScene extends eui.Component implements eui.UIComponent {
 		super.childrenCreated();
 		this.init();
 		this.reset();
+		// 2. 游戏开始时加载词库
+		this.loadWordList();
 	}
 	private init() {
 		this.blockSourceNames = ["block1_png", "block2_png", "block3_png"];
@@ -275,5 +289,268 @@ private update(x, y) {
 	public set factor(value: number) {
 		this.player.x = (1 - value) * (1 - value) * this.player.x + 2 * value * (1 - value) * (this.player.x + this.targetPos.x) / 2 + value * value * (this.targetPos.x);
 		this.player.y = (1 - value) * (1 - value) * this.player.y + 2 * value * (1 - value) * (this.targetPos.y - 300) + value * value * (this.targetPos.y);
+	}
+	// 2. 加载词库，优先网络，失败用本地
+	private loadWordList() {
+		let self = this;
+		let xhr = new XMLHttpRequest();
+		xhr.open('GET', 'http://yourwind.site:15001/py/get_bookunit_word?refresh=0&bookId=48&unitId=235', true);
+		xhr.setRequestHeader('Referer', 'https://www.yourwind.fun');
+		xhr.onreadystatechange = function () {
+			if (xhr.readyState == 4) {
+				if (xhr.status == 200) {
+					try {
+						let res = JSON.parse(xhr.responseText);
+						if (res.data && res.data.length > 0) {
+							// 题库格式兼容
+							self.wordList = res.data[0];
+							self.currentWordIndex = 0;
+							self.showQuizPanel();
+							return;
+						}
+					} catch (e) {}
+				}
+				// 网络失败，读取本地
+				let localXhr = new XMLHttpRequest();
+				localXhr.open('GET', 'data.json', true);
+				localXhr.onreadystatechange = function () {
+					if (localXhr.readyState == 4) {
+						if (localXhr.status == 200) {
+							try {
+								let data = JSON.parse(localXhr.responseText);
+								if (data && data.data && data.data.length > 0) {
+									self.wordList = data.data[0];
+									self.currentWordIndex = 0;
+									self.showQuizPanel();
+									return;
+								}
+							} catch (e) {}
+						}
+						alert('词库加载失败！');
+					}
+				};
+				localXhr.send();
+			}
+		};
+		xhr.send();
+	}
+	// 3. 题目弹窗生成与逻辑
+	private showQuizPanel() {
+		if (!this.wordList || this.wordList.length === 0) return;
+		this.quizIsActive = true;
+		// 先移除旧弹窗
+		if (this.quizPanel && this.quizPanel.parent) {
+			this.quizPanel.parent.removeChild(this.quizPanel);
+		}
+		// 取当前单词
+		let word = this.wordList[this.currentWordIndex];
+		// 随机生成选项
+		let options = [word.zh];
+		while (options.length < 3) {
+			let idx = Math.floor(Math.random() * this.wordList.length);
+			let zh = this.wordList[idx].zh;
+			if (options.indexOf(zh) === -1) options.push(zh);
+		}
+		// 打乱选项
+		options = options.sort(() => Math.random() - 0.5);
+		this.quizOptions = options;
+		this.quizAnswer = word.zh;
+		// 创建弹窗
+		let panel = new eui.Group();
+		panel.width = 500;
+		panel.height = 300;
+		panel.horizontalCenter = 0;
+		panel.verticalCenter = 0;
+		// 用Shape绘制背景色
+		let bg = new egret.Shape();
+		bg.graphics.beginFill(0x222222, 0.95);
+		bg.graphics.drawRect(0, 0, 500, 300);
+		bg.graphics.endFill();
+		panel.addChild(bg);
+		// 英文单词
+		let wordLabel = new eui.Label();
+		wordLabel.text = `'${word.en}' 的意思是?`;
+		wordLabel.size = 36;
+		wordLabel.textColor = 0xffffff;
+		wordLabel.horizontalCenter = 0;
+		wordLabel.top = 30;
+		panel.addChild(wordLabel);
+		this.quizWordLabel = wordLabel;
+		// 选项按钮
+		this.quizOptionBtns = [];
+		for (let i = 0; i < 3; i++) {
+			let btn = new eui.Button();
+			btn.label = options[i];
+			btn.width = 160;
+			btn.height = 60;
+			btn.horizontalCenter = (i === 1 ? 120 : (i === 0 ? -120 : 0));
+			btn.top = 100 + (i === 2 ? 80 : 0);
+			btn.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onQuizOptionTap, this);
+			panel.addChild(btn);
+			this.quizOptionBtns.push(btn);
+		}
+		// 倒计时
+		let timeLabel = new eui.Label();
+		timeLabel.text = '时间: 10';
+		timeLabel.size = 32;
+		timeLabel.textColor = 0xffff00;
+		timeLabel.horizontalCenter = 0;
+		timeLabel.bottom = 30;
+		panel.addChild(timeLabel);
+		this.quizTimeLabel = timeLabel;
+		// 添加到场景
+		this.addChild(panel);
+		this.quizPanel = panel;
+		// 启动倒计时
+		this.quizTimeLeft = 10;
+		if (this.quizTimer) {
+			this.quizTimer.stop();
+			this.quizTimer.removeEventListener(egret.TimerEvent.TIMER, this.onQuizTimer, this);
+		}
+		this.quizTimer = new egret.Timer(1000, 10);
+		this.quizTimer.addEventListener(egret.TimerEvent.TIMER, this.onQuizTimer, this);
+		this.quizTimer.addEventListener(egret.TimerEvent.TIMER_COMPLETE, this.onQuizTimeout, this);
+		this.quizTimer.start();
+	}
+	// 选项点击
+	private onQuizOptionTap(e: egret.TouchEvent) {
+		if (!this.quizIsActive) return;
+		let btn = e.currentTarget as eui.Button;
+		let isCorrect = btn.label === this.quizAnswer;
+		this.quizIsActive = false;
+		this.quizTimer.stop();
+		this.removeQuizPanel();
+		this.handleQuizResult(isCorrect);
+	}
+	// 倒计时
+	private onQuizTimer() {
+		this.quizTimeLeft--;
+		this.quizTimeLabel.text = '时间: ' + this.quizTimeLeft;
+	}
+	private onQuizTimeout() {
+		if (!this.quizIsActive) return;
+		this.quizIsActive = false;
+		this.removeQuizPanel();
+		this.handleQuizResult(false);
+	}
+	private removeQuizPanel() {
+		if (this.quizPanel && this.quizPanel.parent) {
+			this.quizPanel.parent.removeChild(this.quizPanel);
+		}
+	}
+	// 4. 处理答题结果，前进/后退
+	private handleQuizResult(isCorrect: boolean) {
+		if (isCorrect) {
+			// 正确，前进一格
+			this.jumpForward();
+		} else {
+			// 错误，后退一格
+			this.jumpBackward();
+		}
+	}
+	// 前进一格
+	private jumpForward() {
+		// 更新分数
+		this.score++;
+		this.scoreLabel.text = this.score.toString();
+		// 随机下一个方块出现的位置
+		this.direction = Math.random() > 0.5 ? 1 : -1;
+		
+		// 当前方块要移动到相应跳跃点的距离
+		var blockX, blockY;
+		blockX = this.direction > 0 ? this.leftOrigin.x : this.rightOrigin.x;
+		blockY = this.height / 2 + this.currentBlock.height;
+		
+		// 小人要移动到的点
+		var playerX, PlayerY;
+		playerX = this.player.x - (this.currentBlock.x - blockX);
+		PlayerY = this.player.y - (this.currentBlock.y - blockY);
+		
+		// 更新页面
+		this.update(this.currentBlock.x - blockX, this.currentBlock.y - blockY);
+		
+		// 更新小人的位置并添加下一个方块
+		egret.Tween.get(this.player).to({
+			x: playerX,
+			y: PlayerY
+		}, 1000).call(() => {
+			// 创建下一个方块
+			this.addBlock();
+			// 屏幕可点击
+			this.blockPanel.touchEnabled = true;
+			
+			// 进入下一题
+			this.currentWordIndex++;
+			if (this.currentWordIndex >= this.wordList.length) {
+				this.currentWordIndex = 0;
+			}
+			// 动画完成后再显示下一个题目
+			this.showQuizPanel();
+		});
+	}
+	// 后退一格
+	private jumpBackward() {
+		// 回退到上一个方块，或初始位置
+		if (this.score > 0) {
+			this.score--;
+			this.scoreLabel.text = this.score.toString();
+			
+			// 回退动画
+			// 小人要移动到的回退点
+			var playerX = this.currentBlock.x;
+			var playerY = this.currentBlock.y;
+			
+			// 播放回退动画
+			egret.Tween.get(this.player).to({
+				x: playerX,
+				y: playerY
+			}, 1000).call(() => {
+				// 动画完成后再显示下一个题目
+				this.currentWordIndex++;
+				if (this.currentWordIndex >= this.wordList.length) {
+					this.currentWordIndex = 0;
+				}
+				this.showQuizPanel();
+			});
+		} else {
+			// 回到初始位置，弹窗提示重新开始
+			this.showRestartPanel();
+		}
+	}
+	// 5. 回到初始位置弹窗
+	private showRestartPanel() {
+		let panel = new eui.Group();
+		panel.width = 400;
+		panel.height = 200;
+		panel.horizontalCenter = 0;
+		panel.verticalCenter = 0;
+		// 用Shape绘制背景色
+		let bg = new egret.Shape();
+		bg.graphics.beginFill(0x222222, 0.95);
+		bg.graphics.drawRect(0, 0, 400, 200);
+		bg.graphics.endFill();
+		panel.addChild(bg);
+		let label = new eui.Label();
+		label.text = '已回到起点，是否重新开始？';
+		label.size = 32;
+		label.textColor = 0xffffff;
+		label.horizontalCenter = 0;
+		label.top = 40;
+		panel.addChild(label);
+		let btn = new eui.Button();
+		btn.label = '重新开始';
+		btn.width = 160;
+		btn.height = 60;
+		btn.horizontalCenter = 0;
+		btn.bottom = 40;
+		btn.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+			if (panel.parent) panel.parent.removeChild(panel);
+			this.score = 0;
+			this.scoreLabel.text = this.score.toString();
+			this.currentWordIndex = 0;
+			this.showQuizPanel();
+		}, this);
+		panel.addChild(btn);
+		this.addChild(panel);
 	}
 }
