@@ -770,13 +770,15 @@ var GameScene = (function (_super) {
         label.horizontalCenter = 0;
         label.top = 40;
         if (isPerfect) {
-            label.text = "\u592A\u68D2\u4E86\uFF01\u4E00\u6B21\u5168\u90E8\u56DE\u7B54\u6B63\u786E\uFF01\n\u5206\u6570\uFF1A" + correctCount + "/" + total;
+            label.text = "\u592A\u68D2\u4E86\uFF01\u5168\u90E8\u56DE\u7B54\u6B63\u786E\uFF01\n\u5206\u6570\uFF1A" + total + "/" + total;
         }
         else if (correctCount === total) {
-            label.text = "\u5168\u90E8\u7B54\u5BF9\u4E86\uFF01\u4F46\u6709\u91CD\u590D\u4F5C\u7B54\u3002\n\u5206\u6570\uFF1A" + correctCount + "/" + total;
+            // 有重复作答，显示实际得分
+            label.text = "\u56DE\u7B54\u4E2D\u6709\u90E8\u5206\u51FA\u9519\u54E6\u3002\n\u8FD8\u9700\u8BA4\u771F\u590D\u4E60\uFF01\n\u5206\u6570\uFF1A" + this.score + "/" + total;
         }
         else {
-            label.text = "\u7B54\u9898\u7ED3\u675F\uFF01\n\u5206\u6570\uFF1A" + correctCount + "/" + total;
+            // 部分回答正确，显示实际得分
+            label.text = "\u7B54\u9898\u7ED3\u675F\uFF01\n\u5206\u6570\uFF1A" + this.score + "/" + total;
         }
         panel.addChild(label);
         // 满分动画

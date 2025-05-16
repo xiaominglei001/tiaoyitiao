@@ -827,11 +827,13 @@ private update(x, y) {
 		label.horizontalCenter = 0;
 		label.top = 40;
 		if (isPerfect) {
-			label.text = `太棒了！一次全部回答正确！\n分数：${correctCount}/${total}`;
+			label.text = `太棒了！全部回答正确！\n分数：${total}/${total}`;
 		} else if (correctCount === total) {
-			label.text = `全部答对了！但有重复作答。\n分数：${correctCount}/${total}`;
+			// 有重复作答，显示实际得分
+			label.text = `回答中有部分出错哦。\n还需认真复习！\n分数：${this.score}/${total}`;
 		} else {
-			label.text = `答题结束！\n分数：${correctCount}/${total}`;
+			// 部分回答正确，显示实际得分
+			label.text = `答题结束！\n分数：${this.score}/${total}`;
 		}
 		panel.addChild(label);
 
