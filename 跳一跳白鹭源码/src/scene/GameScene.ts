@@ -58,6 +58,11 @@ class GameScene extends eui.Component implements eui.UIComponent {
 	private quizOptionBtns: Array<eui.Button> = [];
 	private quizWordLabel: eui.Label;
 	private quizIsActive: boolean = false;
+	// 新增音频相关变量
+	private wordAudio: egret.Sound;
+	private wordAudioChannel: egret.SoundChannel;
+	private audioLoadingIcon: eui.Image; // 显示加载音频时的图标
+	private playAudioBtn: eui.Button; // 播放音频按钮
 
 	public constructor() {
 		super();
@@ -344,6 +349,10 @@ private update(x, y) {
 		}
 		// 取当前单词
 		let word = this.wordList[this.currentWordIndex];
+		
+		// 加载并播放单词音频
+		this.loadAndPlayWordAudio(word.ourWordAudio);
+		
 		// 随机生成选项
 		let options = [word.zh];
 		while (options.length < 3) {
@@ -376,6 +385,27 @@ private update(x, y) {
 		wordLabel.top = 30;
 		panel.addChild(wordLabel);
 		this.quizWordLabel = wordLabel;
+		
+		// 添加播放音频按钮
+		let playBtn = new eui.Button();
+		playBtn.skinName = "skins.ButtonSkin"; // 使用默认按钮皮肤
+		playBtn.label = "再听一次";
+		playBtn.width = 120;
+		playBtn.height = 40;
+		playBtn.horizontalCenter = 0;
+		playBtn.top = 80;
+		playBtn.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
+			// 再听一次当前单词的音频
+			if (this.wordAudio) {
+				if (this.wordAudioChannel) {
+					this.wordAudioChannel.stop();
+				}
+				this.wordAudioChannel = this.wordAudio.play(0, 1);
+			}
+		}, this);
+		panel.addChild(playBtn);
+		this.playAudioBtn = playBtn;
+		
 		// 选项按钮
 		this.quizOptionBtns = [];
 		for (let i = 0; i < 3; i++) {
@@ -384,7 +414,7 @@ private update(x, y) {
 			btn.width = 160;
 			btn.height = 60;
 			btn.horizontalCenter = (i === 1 ? 120 : (i === 0 ? -120 : 0));
-			btn.top = 100 + (i === 2 ? 80 : 0);
+			btn.top = 130 + (i === 2 ? 80 : 0); // 调整位置，留出空间给播放按钮
 			btn.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onQuizOptionTap, this);
 			panel.addChild(btn);
 			this.quizOptionBtns.push(btn);
@@ -434,6 +464,12 @@ private update(x, y) {
 		this.handleQuizResult(false);
 	}
 	private removeQuizPanel() {
+		// 停止播放音频
+		if (this.wordAudioChannel) {
+			this.wordAudioChannel.stop();
+			this.wordAudioChannel = null;
+		}
+		
 		if (this.quizPanel && this.quizPanel.parent) {
 			this.quizPanel.parent.removeChild(this.quizPanel);
 		}
@@ -704,5 +740,49 @@ private update(x, y) {
 		
 		// 重新显示题目
 		this.showQuizPanel();
+	}
+	// 新增方法：加载并播放单词音频
+	private loadAndPlayWordAudio(audioUrl: string) {
+		if (!audioUrl) {
+			console.log('单词没有音频URL');
+			return;
+		}
+		
+		// 清除之前的音频
+		if (this.wordAudioChannel) {
+			this.wordAudioChannel.stop();
+			this.wordAudioChannel = null;
+		}
+		
+		// 加载新音频
+		let sound: egret.Sound = new egret.Sound();
+		sound.addEventListener(egret.Event.COMPLETE, () => {
+			// 音频加载完成，播放
+			this.wordAudio = sound;
+			this.wordAudioChannel = sound.play(0, 1);
+			
+			// 清除加载音频时的图标
+			if (this.audioLoadingIcon && this.audioLoadingIcon.parent) {
+				this.audioLoadingIcon.parent.removeChild(this.audioLoadingIcon);
+			}
+			
+			// 显示播放音频按钮
+			if (this.playAudioBtn) {
+				this.playAudioBtn.visible = true;
+			}
+		}, this);
+		
+		sound.addEventListener(egret.IOErrorEvent.IO_ERROR, () => {
+			// 音频加载失败
+			console.error('音频加载失败:', audioUrl);
+			
+			// 清除加载音频时的图标
+			if (this.audioLoadingIcon && this.audioLoadingIcon.parent) {
+				this.audioLoadingIcon.parent.removeChild(this.audioLoadingIcon);
+			}
+		}, this);
+		
+		// 加载音频URL
+		sound.load(audioUrl);
 	}
 }

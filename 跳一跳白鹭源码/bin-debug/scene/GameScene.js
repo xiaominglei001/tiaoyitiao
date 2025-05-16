@@ -321,6 +321,7 @@ var GameScene = (function (_super) {
     };
     // 3. 题目弹窗生成与逻辑
     GameScene.prototype.showQuizPanel = function () {
+        var _this = this;
         if (!this.wordList || this.wordList.length === 0)
             return;
         this.quizIsActive = true;
@@ -330,6 +331,8 @@ var GameScene = (function (_super) {
         }
         // 取当前单词
         var word = this.wordList[this.currentWordIndex];
+        // 加载并播放单词音频
+        this.loadAndPlayWordAudio(word.ourWordAudio);
         // 随机生成选项
         var options = [word.zh];
         while (options.length < 3) {
@@ -363,6 +366,25 @@ var GameScene = (function (_super) {
         wordLabel.top = 30;
         panel.addChild(wordLabel);
         this.quizWordLabel = wordLabel;
+        // 添加播放音频按钮
+        var playBtn = new eui.Button();
+        playBtn.skinName = "skins.ButtonSkin"; // 使用默认按钮皮肤
+        playBtn.label = "再听一次";
+        playBtn.width = 120;
+        playBtn.height = 40;
+        playBtn.horizontalCenter = 0;
+        playBtn.top = 80;
+        playBtn.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
+            // 再听一次当前单词的音频
+            if (_this.wordAudio) {
+                if (_this.wordAudioChannel) {
+                    _this.wordAudioChannel.stop();
+                }
+                _this.wordAudioChannel = _this.wordAudio.play(0, 1);
+            }
+        }, this);
+        panel.addChild(playBtn);
+        this.playAudioBtn = playBtn;
         // 选项按钮
         this.quizOptionBtns = [];
         for (var i = 0; i < 3; i++) {
@@ -371,7 +393,7 @@ var GameScene = (function (_super) {
             btn.width = 160;
             btn.height = 60;
             btn.horizontalCenter = (i === 1 ? 120 : (i === 0 ? -120 : 0));
-            btn.top = 100 + (i === 2 ? 80 : 0);
+            btn.top = 130 + (i === 2 ? 80 : 0); // 调整位置，留出空间给播放按钮
             btn.addEventListener(egret.TouchEvent.TOUCH_TAP, this.onQuizOptionTap, this);
             panel.addChild(btn);
             this.quizOptionBtns.push(btn);
@@ -423,6 +445,11 @@ var GameScene = (function (_super) {
         this.handleQuizResult(false);
     };
     GameScene.prototype.removeQuizPanel = function () {
+        // 停止播放音频
+        if (this.wordAudioChannel) {
+            this.wordAudioChannel.stop();
+            this.wordAudioChannel = null;
+        }
         if (this.quizPanel && this.quizPanel.parent) {
             this.quizPanel.parent.removeChild(this.quizPanel);
         }
@@ -666,6 +693,44 @@ var GameScene = (function (_super) {
         this.reset();
         // 重新显示题目
         this.showQuizPanel();
+    };
+    // 新增方法：加载并播放单词音频
+    GameScene.prototype.loadAndPlayWordAudio = function (audioUrl) {
+        var _this = this;
+        if (!audioUrl) {
+            console.log('单词没有音频URL');
+            return;
+        }
+        // 清除之前的音频
+        if (this.wordAudioChannel) {
+            this.wordAudioChannel.stop();
+            this.wordAudioChannel = null;
+        }
+        // 加载新音频
+        var sound = new egret.Sound();
+        sound.addEventListener(egret.Event.COMPLETE, function () {
+            // 音频加载完成，播放
+            _this.wordAudio = sound;
+            _this.wordAudioChannel = sound.play(0, 1);
+            // 清除加载音频时的图标
+            if (_this.audioLoadingIcon && _this.audioLoadingIcon.parent) {
+                _this.audioLoadingIcon.parent.removeChild(_this.audioLoadingIcon);
+            }
+            // 显示播放音频按钮
+            if (_this.playAudioBtn) {
+                _this.playAudioBtn.visible = true;
+            }
+        }, this);
+        sound.addEventListener(egret.IOErrorEvent.IO_ERROR, function () {
+            // 音频加载失败
+            console.error('音频加载失败:', audioUrl);
+            // 清除加载音频时的图标
+            if (_this.audioLoadingIcon && _this.audioLoadingIcon.parent) {
+                _this.audioLoadingIcon.parent.removeChild(_this.audioLoadingIcon);
+            }
+        }, this);
+        // 加载音频URL
+        sound.load(audioUrl);
     };
     return GameScene;
 }(eui.Component));
