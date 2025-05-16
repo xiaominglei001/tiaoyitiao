@@ -440,39 +440,63 @@ var GameScene = (function (_super) {
     };
     // 前进一格
     GameScene.prototype.jumpForward = function () {
+        // 模拟按压和松开的过程，实现真实跳跃效果
         var _this = this;
-        // 更新分数
-        this.score++;
-        this.scoreLabel.text = this.score.toString();
-        // 随机下一个方块出现的位置
-        this.direction = Math.random() > 0.5 ? 1 : -1;
-        // 当前方块要移动到相应跳跃点的距离
-        var blockX, blockY;
-        blockX = this.direction > 0 ? this.leftOrigin.x : this.rightOrigin.x;
-        blockY = this.height / 2 + this.currentBlock.height;
-        // 小人要移动到的点
-        var playerX, PlayerY;
-        playerX = this.player.x - (this.currentBlock.x - blockX);
-        PlayerY = this.player.y - (this.currentBlock.y - blockY);
-        // 更新页面
-        this.update(this.currentBlock.x - blockX, this.currentBlock.y - blockY);
-        // 更新小人的位置并添加下一个方块
-        egret.Tween.get(this.player).to({
-            x: playerX,
-            y: PlayerY
-        }, 1000).call(function () {
-            // 创建下一个方块
-            _this.addBlock();
-            // 屏幕可点击
-            _this.blockPanel.touchEnabled = true;
-            // 进入下一题
-            _this.currentWordIndex++;
-            if (_this.currentWordIndex >= _this.wordList.length) {
-                _this.currentWordIndex = 0;
+        // 确保当前可以跳跃
+        this.blockPanel.touchEnabled = true;
+        // 先模拟按下，角色变形
+        this.onKeyDown();
+        // 设置一个合适的跳跃距离（可根据方块间距调整）
+        setTimeout(function () {
+            // 根据方向设置合适的距离，确保能跳到下一个方块
+            if (_this.direction > 0) {
+                _this.jumpDistance = _this.minDistance + (_this.maxDistance - _this.minDistance) / 2;
             }
-            // 动画完成后再显示下一个题目
-            _this.showQuizPanel();
-        });
+            else {
+                _this.jumpDistance = _this.minDistance + (_this.maxDistance - _this.minDistance) / 2;
+            }
+            // 模拟松开，触发跳跃
+            _this.onKeyUp();
+            // 在原有的judgeResult里增加分数和切换到下一题
+            // 我们需要重写judgeResult方法的行为
+            // 记录当前的judgeResult引用
+            var originalJudgeResult = _this.judgeResult;
+            // 临时重写judgeResult方法
+            _this.judgeResult = function () {
+                // 还原原始方法，避免影响下次跳跃
+                _this.judgeResult = originalJudgeResult;
+                // 更新积分
+                _this.score++;
+                _this.scoreLabel.text = _this.score.toString();
+                // 随机下一个方块出现的位置
+                _this.direction = Math.random() > 0.5 ? 1 : -1;
+                // 执行原有的位置更新逻辑
+                var blockX, blockY;
+                blockX = _this.direction > 0 ? _this.leftOrigin.x : _this.rightOrigin.x;
+                blockY = _this.height / 2 + _this.currentBlock.height;
+                var playerX, PlayerY;
+                playerX = _this.player.x - (_this.currentBlock.x - blockX);
+                PlayerY = _this.player.y - (_this.currentBlock.y - blockY);
+                _this.update(_this.currentBlock.x - blockX, _this.currentBlock.y - blockY);
+                // 更新小人的位置
+                egret.Tween.get(_this.player).to({
+                    x: playerX,
+                    y: PlayerY
+                }, 1000).call(function () {
+                    // 开始创建下一个方块
+                    _this.addBlock();
+                    // 让屏幕重新可点
+                    _this.blockPanel.touchEnabled = true;
+                    // 进入下一题
+                    _this.currentWordIndex++;
+                    if (_this.currentWordIndex >= _this.wordList.length) {
+                        _this.currentWordIndex = 0;
+                    }
+                    // 跳跃完成后显示下一题
+                    _this.showQuizPanel();
+                });
+            };
+        }, 800); // 模拟按压800毫秒
     };
     // 后退一格
     GameScene.prototype.jumpBackward = function () {
@@ -482,21 +506,36 @@ var GameScene = (function (_super) {
             this.score--;
             this.scoreLabel.text = this.score.toString();
             // 回退动画
-            // 小人要移动到的回退点
-            var playerX = this.currentBlock.x;
-            var playerY = this.currentBlock.y;
-            // 播放回退动画
-            egret.Tween.get(this.player).to({
-                x: playerX,
-                y: playerY
-            }, 1000).call(function () {
-                // 动画完成后再显示下一个题目
-                _this.currentWordIndex++;
-                if (_this.currentWordIndex >= _this.wordList.length) {
-                    _this.currentWordIndex = 0;
-                }
-                _this.showQuizPanel();
-            });
+            // 小人要移动到的回退点（往回一格）
+            var prevBlockIndex = this.blockArr.length - 2; // 上一个方块索引
+            if (prevBlockIndex >= 0) {
+                var prevBlock = this.blockArr[prevBlockIndex];
+                // 播放回退动画
+                egret.Tween.get(this.player).to({
+                    x: prevBlock.x,
+                    y: prevBlock.y
+                }, 1000).call(function () {
+                    // 动画完成后再显示下一个题目
+                    _this.currentWordIndex++;
+                    if (_this.currentWordIndex >= _this.wordList.length) {
+                        _this.currentWordIndex = 0;
+                    }
+                    _this.showQuizPanel();
+                });
+            }
+            else {
+                // 如果没有上一个方块，回到初始位置
+                egret.Tween.get(this.player).to({
+                    x: 200,
+                    y: this.height / 2 + this.currentBlock.height // 初始y坐标
+                }, 1000).call(function () {
+                    _this.currentWordIndex++;
+                    if (_this.currentWordIndex >= _this.wordList.length) {
+                        _this.currentWordIndex = 0;
+                    }
+                    _this.showQuizPanel();
+                });
+            }
         }
         else {
             // 回到初始位置，弹窗提示重新开始
