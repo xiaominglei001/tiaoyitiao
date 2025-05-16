@@ -367,13 +367,13 @@ private update(x, y) {
 		// 创建弹窗
 		let panel = new eui.Group();
 		panel.width = 500;
-		panel.height = 400;
+		panel.height = 500;
 		panel.horizontalCenter = 0;
 		panel.verticalCenter = 0;
 		// 用Shape绘制背景色
 		let bg = new egret.Shape();
 		bg.graphics.beginFill(0x222222, 0.95);
-		bg.graphics.drawRoundRect(0, 0, 500, 400, 20, 20);
+		bg.graphics.drawRoundRect(0, 0, 500, 500, 20, 20);
 		bg.graphics.endFill();
 		panel.addChild(bg);
 		// 英文单词
@@ -407,7 +407,7 @@ private update(x, y) {
 		timeLabel.fontFamily = "Microsoft YaHei,Arial,黑体,sans-serif";
 		timeLabel.textColor = 0xffff00;
 		timeLabel.horizontalCenter = 0;
-		timeLabel.bottom = 10;
+		timeLabel.bottom = 40;
         panel.addChild(timeLabel);
         this.quizTimeLabel = timeLabel;
 		// 添加到场景
