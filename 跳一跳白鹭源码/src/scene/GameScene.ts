@@ -442,18 +442,18 @@ private update(x, y) {
 		}
 		// 打乱选项
 		options = options.sort(() => Math.random() - 0.5);
-		this.quizOptions = options;
-		this.quizAnswer = word.zh;
+		this.quizOptions = options;  // 保存原始完整选项
+		this.quizAnswer = word.zh;   // 保存正确答案
 		// 创建弹窗
 		let panel = new eui.Group();
-		panel.width = 500;
+		panel.width = 600;
 		panel.height = 500;
 		panel.horizontalCenter = 0;
 		panel.verticalCenter = 0;
 		// 用Shape绘制背景色
 		let bg = new egret.Shape();
 		bg.graphics.beginFill(0x222222, 0.95);
-		bg.graphics.drawRoundRect(0, 0, 500, 500, 20, 20);
+		bg.graphics.drawRoundRect(0, 0, 600, 500, 20, 20);
 		bg.graphics.endFill();
 		panel.addChild(bg);
 		// 英文单词
@@ -471,8 +471,27 @@ private update(x, y) {
 		this.quizOptionBtns = [];
 		for (let i = 0; i < 3; i++) {
 			let btn = new eui.Button();
-			btn.label = options[i];
-			btn.width = 160;
+			
+			// 保存原始选项文本用于答案判断
+			btn["originalText"] = options[i];
+			
+			// 文本截断处理
+			const maxWidth = 300; // 按钮内文本最大宽度（留出一些边距）
+			let optionText = options[i];
+			
+			// 创建临时文本对象测量宽度
+			let tempText = new egret.TextField();
+			tempText.size = 20; // 与按钮文本大小一致
+			tempText.text = optionText;
+			if (tempText.width > maxWidth) {
+				// 文本过长，需要截断
+				let ratio = maxWidth / tempText.width;
+				let maxLength = Math.floor(optionText.length * ratio) - 3; // 留出空间放省略号
+				optionText = optionText.substring(0, maxLength) + "...";
+			}
+			
+			btn.label = optionText;
+			btn.width = 320; // 保持宽度不变
 			btn.height = 60;
 			btn.horizontalCenter = 0;
 			btn.top = 120 + i * 80;
@@ -511,7 +530,8 @@ private update(x, y) {
 	private onQuizOptionTap(e: egret.TouchEvent) {
 		if (!this.quizIsActive) return;
 		let btn = e.currentTarget as eui.Button;
-		let isCorrect = btn.label === this.quizAnswer;
+		// 使用originalText属性获取完整选项文本进行判断
+		let isCorrect = btn["originalText"] === this.quizAnswer;
 		this.quizIsActive = false;
 		this.quizTimer.stop();
 		this.removeQuizPanel();
@@ -732,7 +752,7 @@ private update(x, y) {
 		this.addChild(maskShape);
 		
 		let panel = new eui.Group();
-		panel.width = 400;
+		panel.width = 500; // 适当增加宽度
 		panel.height = 200;
 		panel.horizontalCenter = 0;
 		panel.verticalCenter = 0;
@@ -740,7 +760,7 @@ private update(x, y) {
 		// 用Shape绘制背景色
 		let bg = new egret.Shape();
 		bg.graphics.beginFill(0x222222, 0.95);
-		bg.graphics.drawRoundRect(0, 0, 400, 200, 20, 20);
+		bg.graphics.drawRoundRect(0, 0, 500, 200, 20, 20); // 修改绘制尺寸
 		bg.graphics.endFill();
 		panel.addChild(bg);
 		
@@ -754,7 +774,7 @@ private update(x, y) {
 		
 		let btn = new eui.Button();
 		btn.label = '重新开始';
-		btn.width = 160;
+		btn.width = 240; // 增加按钮宽度
 		btn.height = 60;
 		btn.horizontalCenter = 0;
 		btn.bottom = 40;
@@ -873,7 +893,7 @@ private update(x, y) {
 		
 		// 创建结果面板
 		let panel = new eui.Group();
-		panel.width = 500;
+		panel.width = 600;
 		panel.height = 300;
 		panel.horizontalCenter = 0;
 		panel.verticalCenter = 0;
@@ -895,7 +915,7 @@ private update(x, y) {
 		// 用Shape绘制背景色，但不使用全屏遮罩
 		let bg = new egret.Shape();
 		bg.graphics.beginFill(0x222222, 0.9); // 调低透明度让礼花更明显
-		bg.graphics.drawRoundRect(0, 0, 500, 300, 20, 20);
+		bg.graphics.drawRoundRect(0, 0, 600, 300, 20, 20);
 		bg.graphics.endFill();
 		panel.addChild(bg);
 
