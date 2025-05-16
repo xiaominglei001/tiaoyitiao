@@ -662,7 +662,7 @@ private update(x, y) {
 		panel.addChild(bg);
 		
 		let label = new eui.Label();
-		label.text = '已回到起点，是否重新开始？';
+		label.text = '成绩为0，是否重新开始？';
 		label.size = 32;
 		label.textColor = 0xffffff;
 		label.horizontalCenter = 0;

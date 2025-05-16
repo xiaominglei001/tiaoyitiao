@@ -622,7 +622,7 @@ var GameScene = (function (_super) {
         bg.graphics.endFill();
         panel.addChild(bg);
         var label = new eui.Label();
-        label.text = '已回到起点，是否重新开始？';
+        label.text = '成绩为0，是否重新开始？';
         label.size = 32;
         label.textColor = 0xffffff;
         label.horizontalCenter = 0;
