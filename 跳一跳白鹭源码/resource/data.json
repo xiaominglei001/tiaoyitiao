@@ -1,0 +1,36 @@
+{
+    "data": [
+        [
+            {
+                "en": "rain",
+                "id": 1,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_3_20250107181820A100.mp3",
+                "zh": "雨"
+            },
+            {
+                "en": "shine",
+                "id": 2,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_5_20250107181820A101.mp3",
+                "zh": "光亮"
+            },
+            {
+                "en": "rainy",
+                "id": 3,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_7_20250107181820A102.mp3",
+                "zh": "多雨的"
+            },
+            {
+                "en": "run",
+                "id": 4,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_9_20250107181820A103.mp3",
+                "zh": "跑"
+            },
+            {
+                "en": "windy",
+                "id": 5,
+                "ourWordAudio": "https://ssl.yourwind.fun/profile/upload/2025/01/07/unit4_chunk_11_20250107181820A104.mp3",
+                "zh": "多风的"
+            }
+        ]
+    ]
+}

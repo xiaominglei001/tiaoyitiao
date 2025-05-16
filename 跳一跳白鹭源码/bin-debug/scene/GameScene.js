@@ -302,7 +302,24 @@ var GameScene = (function (_super) {
                     }
                     catch (e) { }
                 }
-                // 网络失败，读取本地
+                // 网络失败，使用RES加载本地data.json
+                try {
+                    // 尝试使用RES系统获取资源
+                    var data = RES.getRes("data_json");
+                    if (data && data.data && data.data.length > 0) {
+                        self.wordList = data.data[0];
+                        self.quizOrder = self.shuffleOrder(self.wordList.length);
+                        self.quizResult = [];
+                        self.currentWordIndex = 0;
+                        self.hadWrongAnswer = false;
+                        self.showQuizPanel();
+                        return;
+                    }
+                }
+                catch (e) {
+                    console.error("加载RES资源失败", e);
+                }
+                // 如果RES加载失败，尝试直接加载文件（兼容旧版本）
                 var localXhr_1 = new XMLHttpRequest();
                 localXhr_1.open('GET', 'data.json', true);
                 localXhr_1.onreadystatechange = function () {
