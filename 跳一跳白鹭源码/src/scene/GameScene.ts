@@ -379,7 +379,8 @@ private update(x, y) {
 		// 英文单词
 		let wordLabel = new eui.Label();
 		wordLabel.text = `'${word.en}' 的意思是?`;
-		wordLabel.size = 36;
+		wordLabel.size = 52;
+		wordLabel.fontFamily = "Microsoft YaHei,Arial,黑体,sans-serif";
 		wordLabel.textColor = 0xffffff;
 		wordLabel.horizontalCenter = 0;
 		wordLabel.top = 30;
@@ -402,7 +403,8 @@ private update(x, y) {
 		// 倒计时
 		let timeLabel = new eui.Label();
 		timeLabel.text = '时间: 10';
-		timeLabel.size = 32;
+		timeLabel.size = 48;
+		timeLabel.fontFamily = "Microsoft YaHei,Arial,黑体,sans-serif";
 		timeLabel.textColor = 0xffff00;
 		timeLabel.horizontalCenter = 0;
 		timeLabel.bottom = 10;

@@ -359,7 +359,8 @@ var GameScene = (function (_super) {
         // 英文单词
         var wordLabel = new eui.Label();
         wordLabel.text = "'" + word.en + "' \u7684\u610F\u601D\u662F?";
-        wordLabel.size = 36;
+        wordLabel.size = 52;
+        wordLabel.fontFamily = "Microsoft YaHei,Arial,黑体,sans-serif";
         wordLabel.textColor = 0xffffff;
         wordLabel.horizontalCenter = 0;
         wordLabel.top = 30;
@@ -381,7 +382,8 @@ var GameScene = (function (_super) {
         // 倒计时
         var timeLabel = new eui.Label();
         timeLabel.text = '时间: 10';
-        timeLabel.size = 32;
+        timeLabel.size = 48;
+        timeLabel.fontFamily = "Microsoft YaHei,Arial,黑体,sans-serif";
         timeLabel.textColor = 0xffff00;
         timeLabel.horizontalCenter = 0;
         timeLabel.bottom = 10;
